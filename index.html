@@ -62,7 +62,10 @@
               <p class="eyebrow">Weekly plan</p>
               <h2 id="scheduleHeading">Your schedule</h2>
             </div>
-            <p class="week-range" id="weekRange"></p>
+            <div class="schedule-meta">
+              <p class="week-range" id="weekRange"></p>
+              <button class="schedule-config" id="openScheduleSettings" type="button"></button>
+            </div>
           </div>
 
           <div class="day-tabs" id="dayTabs" role="tablist" aria-label="Days of the week"></div>
@@ -73,6 +76,7 @@
                 <div class="day-badge" id="selectedDayLabel"></div>
                 <h3 id="workoutTitle"></h3>
                 <p id="workoutFocus"></p>
+                <div class="workout-meta" id="workoutMeta"></div>
               </div>
               <button class="secondary-button" id="editWorkout" type="button">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -82,13 +86,62 @@
               </button>
             </div>
 
-            <div class="exercise-list" id="exerciseList"></div>
+            <div id="workoutDetails">
+              <section class="warmup-panel" aria-labelledby="warmupHeading">
+                <div class="content-heading">
+                  <span class="content-icon" aria-hidden="true">01</span>
+                  <div>
+                    <p class="eyebrow">Prepare to train</p>
+                    <h4 id="warmupHeading">Warm-up</h4>
+                  </div>
+                </div>
+                <ul class="warmup-list" id="warmupList"></ul>
+              </section>
+
+              <div class="content-heading working-heading">
+                <span class="content-icon" aria-hidden="true">02</span>
+                <div>
+                  <p class="eyebrow">Main session</p>
+                  <h4>Working sets</h4>
+                </div>
+              </div>
+              <div class="exercise-list" id="exerciseList"></div>
+
+              <section class="notes-panel" aria-labelledby="notesHeading">
+                <div class="content-heading">
+                  <span class="content-icon" aria-hidden="true">!</span>
+                  <div>
+                    <p class="eyebrow">Before you lift</p>
+                    <h4 id="notesHeading">Important notes</h4>
+                  </div>
+                </div>
+                <ul id="notesList"></ul>
+              </section>
+            </div>
             <div class="rest-state" id="restState" hidden>
               <span class="rest-icon" aria-hidden="true">↗</span>
               <h4>Recovery is part of the plan.</h4>
-              <p>Take the day off, get some steps in, and come back stronger.</p>
+              <p>Take the day off, walk or move gently if it feels good, and come back recovered.</p>
             </div>
           </article>
+
+          <section class="program-guide" aria-label="Training guidance">
+            <article>
+              <span>Progress</span>
+              <h4>Own the reps first.</h4>
+              <p>When every set reaches the top of its rep range with controlled form, add the smallest practical weight next time.</p>
+            </article>
+            <article>
+              <span>Effort</span>
+              <h4>Keep clean reps in reserve.</h4>
+              <p>Choose loads you can control through a comfortable range. End the set before technique breaks down.</p>
+            </article>
+            <article>
+              <span>Safety</span>
+              <h4>Pain changes the plan.</h4>
+              <p>Stop for sharp or increasing pain, dizziness, or feeling unwell. Ask a qualified professional when unsure.</p>
+            </article>
+          </section>
         </section>
       </main>
 
@@ -144,6 +197,33 @@
           <span>Your name</span>
           <input id="profileName" name="profileName" maxlength="30" placeholder="Your name" />
         </label>
+        <div class="settings-grid">
+          <label class="field">
+            <span>Plan starts on</span>
+            <select id="startDay" name="startDay">
+              <option value="monday">Monday</option>
+              <option value="tuesday">Tuesday</option>
+              <option value="wednesday">Wednesday</option>
+              <option value="thursday">Thursday</option>
+              <option value="friday">Friday</option>
+              <option value="saturday">Saturday</option>
+              <option value="sunday">Sunday</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Days to train</span>
+            <select id="trainingDayCount" name="trainingDayCount">
+              <option value="1">1 day</option>
+              <option value="2">2 days</option>
+              <option value="3">3 days</option>
+              <option value="4">4 days</option>
+              <option value="5">5 days — full split</option>
+            </select>
+          </label>
+        </div>
+        <p class="schedule-note">
+          Workouts run in order from your starting day. Choose five days to include the complete split.
+        </p>
         <p class="privacy-note">
           This version has no account or cloud database. Your schedule and progress stay in this browser.
         </p>

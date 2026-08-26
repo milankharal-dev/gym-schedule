@@ -1,4 +1,4 @@
-const CACHE_NAME = "training-week-v1";
+const CACHE_NAME = "training-week-v2";
 const APP_ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
