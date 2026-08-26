@@ -1,11 +1,12 @@
-const STORAGE_KEY = "gym-schedule-v3";
+const STORAGE_KEY = "gym-schedule-v4";
+const LEGACY_STORAGE_KEY = "gym-schedule-v3";
 const MUSCLE_IMAGE = "./assets/muscle-anatomy.png";
 const exerciseAtlases = {
   "legs-full": { src: "./assets/exercises-legs.png", rows: 3 },
   "chest-triceps": { src: "./assets/exercises-chest-triceps.png", rows: 3 },
-  back: { src: "./assets/exercises-back.png", rows: 3 },
+  back: { src: "./assets/exercises-back-v2.png", rows: 3, layout: "wide" },
   "shoulders-core": { src: "./assets/exercises-shoulders-core.png", rows: 4 },
-  "arms-chest-accessory": { src: "./assets/exercises-arms-chest.png", rows: 3 },
+  "arms-chest-accessory": { src: "./assets/exercises-arms-chest-v2.png", rows: 3, layout: "wide" },
 };
 
 const dayDefinitions = [
@@ -40,6 +41,7 @@ const programWorkouts = [
       e("calf-raise", "Standing calf raise", "4", "12–15", "60 sec", "2-1-2-1", "Calves", "Soleus", ["calves"]),
     ],
     notes: [
+      "Coverage: quads, hamstrings, glutes, adductors and calves all receive direct or compound work.",
       "Brace before each squat rep and keep your knees tracking in the same direction as your toes.",
       "Use a pain-free range you can control. Reduce load or range when position changes under fatigue.",
       "Tempo is written as lowering · bottom pause · lifting · top pause, in seconds.",
@@ -59,27 +61,31 @@ const programWorkouts = [
       e("rope-pushdown", "Rope triceps pushdown", "3", "12–15", "60 sec", "2-1-2-0", "Triceps", "Forearms", ["triceps"]),
     ],
     notes: [
+      "Coverage: flat and incline pressing train the full chest, while both overhead and pushdown patterns train the triceps.",
       "Set your shoulder blades before pressing and keep your feet planted throughout each working set.",
       "Keep elbows and wrists stacked during presses; never force an uncomfortable fly depth.",
       "If your shoulders feel irritated, reduce load and range or choose a comfortable machine variation.",
     ],
   },
   {
-    id: "back", title: "Back day", focus: "Lats, upper back, rear delts and biceps", duration: "60–75 min",
+    id: "back", title: "Back day", focus: "Lats, upper back, lower back, rear delts and traps", duration: "70–85 min",
     warmup: [
       "5–6 min easy rowing with smooth strokes.", "Cat-cow and open-book rotations — 6–8 reps per movement.",
       "Scapular pull-ups or pulldown shrugs — 2 sets of 8 reps.", "Complete 2–3 light ramp-up sets before the first pull.",
     ],
     exercises: [
-      e("pull-up-pulldown", "Pull-up or lat pulldown", "4", "6–10", "2 min", "2-1-1-1", "Lats", "Biceps, upper back", ["lats", "biceps"]),
-      e("chest-supported-row", "Chest-supported row", "4", "8–10", "2 min", "2-1-1-1", "Upper back", "Lats, biceps", ["upper-back", "lats"]),
-      e("single-arm-row", "Single-arm cable row", "3", "10–12 / side", "90 sec", "2-1-1-1", "Lats", "Upper back, biceps", ["lats"]),
+      e("pull-up-pulldown", "Weighted pull-up or heavy lat pulldown", "4", "6–8", "2–3 min", "2-1-1-1", "Lats", "Biceps, upper back", ["lats", "biceps"]),
+      e("bench-supported-row", "Bench-supported dumbbell row", "4", "8–10", "2 min", "2-1-1-1", "Upper back", "Lats, biceps", ["upper-back", "lats"]),
+      e("back-extension", "45-degree back extension", "3", "10–15", "90 sec", "3-1-1-1", "Lower back", "Glutes, hamstrings", ["lower-back", "glutes"]),
       e("straight-arm-pulldown", "Straight-arm pulldown", "3", "12–15", "75 sec", "2-1-2-0", "Lats", "Teres major", ["lats"]),
       e("reverse-fly", "Reverse cable fly", "3", "12–15", "60 sec", "2-1-2-0", "Rear delts", "Mid traps, rhomboids", ["shoulders", "upper-back"]),
+      e("dumbbell-shrug", "Dumbbell shrug", "3", "10–15", "75 sec", "2-1-2-1", "Upper traps", "Levator scapulae", ["upper-back"]),
     ],
     notes: [
+      "Coverage: vertical and horizontal pulls train back width and thickness; extensions and shrugs add direct lower-back and upper-trap work.",
       "Start each pull by moving the shoulder blade, then drive the elbow without jerking your torso.",
-      "Keep your neck neutral and avoid turning rows into uncontrolled lower-back movement.",
+      "Keep back extensions controlled with a neutral spine; this is direct lower-back work, not a max-load hinge.",
+      "The Romanian deadlift already trains the hip hinge on leg day, so do not add heavy good mornings here.",
       "Straps are optional when grip limits the intended back work.",
     ],
   },
@@ -99,19 +105,20 @@ const programWorkouts = [
       e("plank", "Front plank", "3", "30–60 sec", "45 sec", "Controlled", "Core", "Glutes, shoulders", ["core"]),
     ],
     notes: [
+      "Coverage: presses train front delts, raises train side delts, and fly/face-pull work trains rear delts and shoulder control.",
       "Keep ribs stacked over your pelvis during presses rather than arching your lower back.",
       "Lead lateral raises with the elbows and avoid swinging the weight.",
       "Core sets should resist movement while you continue breathing normally.",
     ],
   },
   {
-    id: "arms-chest-accessory", title: "Arms + chest", focus: "Biceps, triceps and controlled chest accessories", duration: "55–70 min",
+    id: "arms-chest-accessory", title: "Arms + chest", focus: "Triceps and biceps with controlled upper-chest accessories", duration: "60–75 min",
     warmup: [
       "5 min easy cardio.", "Band pull-aparts and arm circles — 2 rounds of 12 reps.",
-      "Very light curls and pushdowns — 2 sets of 15 each.", "Complete 1–2 easy sets before the first chest movement.",
+      "Very light curls and pushdowns — 2 sets of 15 each.", "Complete 3–4 gradual close-grip bench practice sets.",
     ],
     exercises: [
-      e("machine-chest-press", "Machine chest press", "3", "10–12", "90 sec", "3-0-1-0", "Chest", "Triceps, front delts", ["chest", "triceps"]),
+      e("close-grip-bench", "Close-grip bench press", "4", "6–8", "2–3 min", "3-1-1-0", "Triceps", "Chest, front delts", ["triceps", "chest"]),
       e("low-high-fly", "Low-to-high cable fly", "3", "12–15", "75 sec", "3-1-2-0", "Upper chest", "Front delts", ["chest"]),
       e("ez-bar-curl", "EZ-bar curl", "3", "8–12", "75 sec", "3-1-1-0", "Biceps", "Brachialis, forearms", ["biceps"]),
       e("incline-curl", "Incline dumbbell curl", "3", "10–12", "60 sec", "3-1-1-0", "Biceps", "Forearms", ["biceps"]),
@@ -119,17 +126,142 @@ const programWorkouts = [
       e("overhead-cable-extension", "Overhead cable extension", "3", "12–15", "60 sec", "3-1-1-0", "Triceps", "Forearms", ["triceps"]),
     ],
     notes: [
-      "This is an accessory session: prioritize smooth reps and muscle control over maximum loads.",
+      "Coverage: one heavy triceps compound, two curl angles, two extension angles and upper-chest work balance the session.",
+      "The close-grip bench is the day's primary compound. Keep hands just inside shoulder width rather than touching.",
+      "After the first exercise, prioritize smooth reps and muscle control over maximum loads.",
       "Keep the upper arm quiet during curls and extensions; stop when other joints take over.",
       "Reduce sets if chest, elbows or shoulders have not recovered from earlier sessions.",
     ],
   },
 ];
 
+const exerciseAlternatives = {
+  "back-squat": {
+    options: ["Hack squat machine", "Pendulum squat machine", "Smith-machine squat"],
+    recommendation: "Machine squats are excellent for quad growth and easier to stabilize. Keep the barbell squat only if you enjoy it and can progress with consistent form.",
+  },
+  "romanian-deadlift": {
+    options: ["Smith-machine Romanian deadlift", "Plate-loaded hip-hinge machine", "Dumbbell Romanian deadlift"],
+    recommendation: "Keep a hip-hinge pattern for hamstrings, glutes and spinal erectors; a leg curl alone is not an equal replacement.",
+  },
+  "bulgarian-split-squat": {
+    options: ["Single-leg press", "Smith-machine split squat", "Reverse lunge"],
+    recommendation: "The single-leg press is the easiest stable choice. Use a split squat when you also want balance and hip-control practice.",
+  },
+  "leg-press": {
+    options: ["Hack squat machine", "Pendulum squat machine", "Belt squat machine"],
+    recommendation: "Choose only one stable quad-press exercise here; these variations largely duplicate one another.",
+  },
+  "leg-curl": {
+    options: ["Seated leg-curl machine", "Lying leg-curl machine", "Single-leg curl machine"],
+    recommendation: "Prefer the seated machine when comfortable because it trains the hamstrings in a more lengthened hip position.",
+  },
+  "calf-raise": {
+    options: ["Standing calf-raise machine", "Leg-press calf raise", "Smith-machine calf raise"],
+    recommendation: "Use the option that allows a deep stretch, full rise and pause without bouncing. A seated raise can be added only when extra soleus work is needed.",
+  },
+  "bench-press": {
+    options: ["Plate-loaded chest-press machine", "Selectorized chest-press machine", "Dumbbell bench press"],
+    recommendation: "A chest-press machine is just as useful for chest growth when it fits your joints. Keep barbell bench if building that specific strength skill matters to you.",
+  },
+  "incline-db-press": {
+    options: ["Incline chest-press machine", "Smith-machine incline press", "Incline barbell press"],
+    recommendation: "The incline machine is the simplest growth-focused option because stability is handled for you.",
+  },
+  "cable-fly": {
+    options: ["Pec-deck machine", "Single-arm cable fly", "Dumbbell fly"],
+    recommendation: "Prefer the pec deck or cable because resistance stays more consistent. Use only one fly variation.",
+  },
+  "overhead-triceps": {
+    options: ["Triceps-extension machine", "Single-arm overhead cable extension", "EZ-bar skull crusher"],
+    recommendation: "Keep one overhead pattern to train the long head of the triceps at longer muscle lengths.",
+  },
+  "rope-pushdown": {
+    options: ["Machine triceps dip", "Straight-bar cable pushdown", "V-bar cable pushdown"],
+    recommendation: "The cable attachments are interchangeable; choose the one most comfortable for your wrists and elbows.",
+  },
+  "pull-up-pulldown": {
+    options: ["Plate-loaded pulldown machine", "Selectorized lat pulldown", "Assisted pull-up machine"],
+    recommendation: "For growth, the stable pulldown is a great default. Use weighted pull-ups if you specifically want pull-up strength and can complete clean reps.",
+  },
+  "bench-supported-row": {
+    options: ["Chest-supported row machine", "Seated cable row", "T-bar row with chest pad"],
+    recommendation: "Prefer a chest-supported machine so the lower back does not limit upper-back work. Choose only one heavy horizontal row.",
+  },
+  "back-extension": {
+    options: ["Selectorized back-extension machine", "Reverse-hyper machine", "Roman-chair back extension"],
+    recommendation: "Use controlled reps, not maximal loading. If Romanian deadlifts leave your lower back fatigued, reduce this to two light sets rather than adding another hinge.",
+  },
+  "straight-arm-pulldown": {
+    options: ["Pullover machine", "Cable pullover", "Single-arm straight-arm pulldown"],
+    recommendation: "A pullover machine is the easiest stable lat-isolation option. Choose one; these fill the same role.",
+  },
+  "reverse-fly": {
+    options: ["Reverse pec-deck machine", "Cable reverse fly", "Chest-supported dumbbell reverse fly"],
+    recommendation: "Prefer the reverse pec deck for stability. Do not add another rear-delt fly on top.",
+  },
+  "dumbbell-shrug": {
+    options: ["Plate-loaded shrug machine", "Smith-machine shrug", "Barbell shrug"],
+    recommendation: "The machine is easiest to load without balance limiting the upper traps. Pause at the top rather than rolling the shoulders.",
+  },
+  "db-shoulder-press": {
+    options: ["Shoulder-press machine", "Smith-machine shoulder press", "Barbell overhead press"],
+    recommendation: "A machine press is the most stable growth-focused option. Keep dumbbells when you value independent-arm control and they feel comfortable.",
+  },
+  "cable-lateral-raise": {
+    options: ["Lateral-raise machine", "Single-arm cable lateral raise", "Dumbbell lateral raise"],
+    recommendation: "Prefer the machine or cable for steady tension. Choose one lateral-raise variation.",
+  },
+  "rear-delt-fly": {
+    options: ["Reverse pec-deck machine", "Cable rear-delt fly", "Chest-supported dumbbell fly"],
+    recommendation: "Use one rear-delt fly. The reverse pec deck is usually the simplest option to progress.",
+  },
+  "face-pull": {
+    options: ["Rear-delt row machine", "High cable row", "Band face pull"],
+    recommendation: "This overlaps with rear-delt flies. Keep two light sets for shoulder control, or skip it if rear delts and upper back are already well trained.",
+  },
+  "dead-bug": {
+    options: ["Ab-crunch machine", "Kneeling cable crunch", "Bird dog"],
+    recommendation: "Choose the machine or cable crunch when direct ab growth is the priority; keep dead bugs when trunk control is the priority.",
+  },
+  "pallof-press": {
+    options: ["Rotary-torso machine", "Cable chop", "Band Pallof press"],
+    recommendation: "The Pallof press trains anti-rotation control. Use the rotary machine when direct oblique growth is the higher priority, with a controlled range.",
+  },
+  "plank": {
+    options: ["Ab-crunch machine", "Cable crunch", "Body saw"],
+    recommendation: "A machine or cable crunch is easier to progressively load for ab growth; keep planks when endurance and bracing are the goal.",
+  },
+  "close-grip-bench": {
+    options: ["Machine triceps dip", "Plate-loaded close-grip press", "Parallel-bar dip"],
+    recommendation: "The machine dip is the simplest stable option. Keep close-grip bench if you want pressing strength as well as triceps growth.",
+  },
+  "low-high-fly": {
+    options: ["Converging incline chest-press machine", "Incline chest-fly machine", "Single-arm low-to-high cable fly"],
+    recommendation: "Choose one upper-chest isolation. Do not add it to multiple incline fly variations.",
+  },
+  "ez-bar-curl": {
+    options: ["Preacher-curl machine", "Cable curl machine", "Straight-bar curl"],
+    recommendation: "The preacher machine is stable and easy to progress. Keep the EZ bar if its grip feels better and you value free-weight skill.",
+  },
+  "incline-curl": {
+    options: ["Biceps-curl machine with arm behind torso", "Bayesian cable curl", "Incline dumbbell curl"],
+    recommendation: "Keep one curl that challenges the biceps in a lengthened position; it complements rather than duplicates the bilateral curl exactly.",
+  },
+  "cable-pushdown": {
+    options: ["Machine triceps dip", "Straight-bar cable pushdown", "V-bar cable pushdown"],
+    recommendation: "Cable attachment changes are minor. Choose the version that is most comfortable and do not perform all of them.",
+  },
+  "overhead-cable-extension": {
+    options: ["Triceps-extension machine", "Single-arm overhead cable extension", "EZ-bar skull crusher"],
+    recommendation: "Keep one overhead extension for the long head of the triceps. It complements the pushdown; multiple overhead variations would be duplicate volume.",
+  },
+};
+
 const markerPositions = {
   chest: [[24, 24], [35, 24]], shoulders: [[16, 21], [42, 21], [61, 22], [89, 22]],
   triceps: [[61, 34], [90, 34]], biceps: [[15, 32], [43, 32]], lats: [[69, 36], [82, 36]],
-  "upper-back": [[75, 27]], core: [[29, 38]], quads: [[23, 62], [36, 62]],
+  "upper-back": [[75, 27]], "lower-back": [[75, 43]], core: [[29, 38]], quads: [[23, 62], [36, 62]],
   hamstrings: [[69, 65], [81, 65]], glutes: [[69, 52], [81, 52]], calves: [[69, 79], [81, 79]],
 };
 
@@ -142,8 +274,9 @@ const defaultState = () => ({
 
 function loadState() {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!stored || !Array.isArray(stored.workouts)) return defaultState();
+    const current = localStorage.getItem(STORAGE_KEY);
+    const stored = JSON.parse(current || localStorage.getItem(LEGACY_STORAGE_KEY));
+    if (!stored) return defaultState();
     const validDays = Array.isArray(stored.trainingDays)
       ? stored.trainingDays.filter((id) => dayDefinitions.some((day) => day.id === id)).slice(0, 5) : [];
     const trainingDays = validDays.length ? validDays : defaultState().trainingDays;
@@ -151,10 +284,10 @@ function loadState() {
       profileName: typeof stored.profileName === "string" ? stored.profileName : "",
       startDayId: trainingDays.includes(stored.startDayId) ? stored.startDayId : trainingDays[0],
       trainingDays,
-      workouts: programWorkouts.map((template) => {
+      workouts: current && Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
         const saved = stored.workouts.find((workout) => workout.id === template.id);
         return saved ? { ...clone(template), ...saved } : clone(template);
-      }),
+      }) : clone(programWorkouts),
       completions: stored.completions && typeof stored.completions === "object" ? stored.completions : {},
     };
   } catch { return defaultState(); }
@@ -247,6 +380,7 @@ function createMovementVisual(workout, exercise, index) {
   visual.setAttribute("aria-label", `${exercise.name} visual reference`);
   if (atlas) {
     if (atlas.rows === 4) visual.classList.add("is-landscape");
+    if (atlas.layout === "wide") visual.classList.add("is-wide");
     const column = index % 2;
     const row = Math.floor(index / 2);
     const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
@@ -259,11 +393,13 @@ function createMovementVisual(workout, exercise, index) {
 }
 function createExerciseCard(workout, exercise, index) {
   const key = completionKey(workout, exercise); const complete = Boolean(weekCompletion()[key]);
-  const card = makeElement("article", `exercise-card${complete ? " is-complete" : ""}`);
+  const card = makeElement("article", `exercise-card${index === 0 ? " is-primary" : ""}${complete ? " is-complete" : ""}`);
   const top = makeElement("div", "exercise-top"); const toggle = makeElement("label", "completion-toggle");
   const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = complete; checkbox.dataset.completionKey = key;
   checkbox.setAttribute("aria-label", `Mark ${exercise.name} complete`); toggle.append(checkbox);
-  const copy = makeElement("div", "exercise-copy"); copy.append(makeElement("h3", "exercise-name", exercise.name));
+  const copy = makeElement("div", "exercise-copy");
+  if (index === 0) copy.append(makeElement("span", "exercise-role", "Primary compound"));
+  copy.append(makeElement("h3", "exercise-name", exercise.name));
   const target = makeElement("p", "target-copy"); const strong = makeElement("strong", "", exercise.target || "Target");
   target.append(strong, document.createTextNode(exercise.secondary ? ` · ${exercise.secondary}` : "")); copy.append(target);
   top.append(toggle, copy);
@@ -274,7 +410,23 @@ function createExerciseCard(workout, exercise, index) {
     const item = makeElement("div"); item.append(makeElement("span", "", label), makeElement("strong", "", value || "—")); prescription.append(item);
   });
   const tempo = makeElement("div", "tempo-row"); tempo.append(makeElement("span", "", "Tempo"), makeElement("strong", "", exercise.tempo || "Controlled"));
-  card.append(top, referenceVisuals, prescription, tempo); return card;
+  card.append(top, referenceVisuals, prescription, tempo);
+  const alternative = exerciseAlternatives[exercise.id];
+  if (alternative) {
+    const controlsId = `alternatives-${workout.dayId}-${exercise.id}`;
+    const button = makeElement("button", "alternatives-button");
+    button.type = "button"; button.dataset.alternativesTarget = controlsId;
+    button.setAttribute("aria-expanded", "false"); button.setAttribute("aria-controls", controlsId);
+    button.append(makeElement("span", "", "Show alternatives"), makeElement("span", "machine-first", "Machines first"), makeElement("span", "alternatives-chevron", "⌄"));
+    const panel = makeElement("div", "alternatives-panel"); panel.id = controlsId; panel.hidden = true;
+    panel.append(makeElement("p", "alternatives-intro", "Same target — choose one replacement:"));
+    const list = makeElement("ul");
+    alternative.options.forEach((option) => list.append(makeElement("li", "", option)));
+    const recommendation = makeElement("p", "coach-note");
+    recommendation.append(makeElement("strong", "", "Coach’s take"), document.createTextNode(alternative.recommendation));
+    panel.append(list, recommendation); card.append(button, panel);
+  }
+  return card;
 }
 function renderWorkout() {
   const workout = getSchedule().find((day) => day.dayId === selectedDayId); const day = dayDefinitions.find((item) => item.id === selectedDayId);
@@ -316,6 +468,13 @@ function openSettingsDialog() {
 
 elements.dayTabs.addEventListener("click", (event) => { const tab = event.target.closest(".day-tab"); if (!tab) return; selectedDayId = tab.dataset.dayId; renderTabs(); renderWorkout(); });
 elements.exerciseList.addEventListener("change", (event) => { const checkbox = event.target.closest("input[type='checkbox']"); if (!checkbox) return; weekCompletion()[checkbox.dataset.completionKey] = checkbox.checked; saveState(); renderWorkout(); renderProgress(); });
+elements.exerciseList.addEventListener("click", (event) => {
+  const button = event.target.closest(".alternatives-button"); if (!button) return;
+  const panel = document.getElementById(button.dataset.alternativesTarget); if (!panel) return;
+  const willOpen = button.getAttribute("aria-expanded") !== "true";
+  button.setAttribute("aria-expanded", String(willOpen)); panel.hidden = !willOpen;
+  button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : "Show alternatives";
+});
 elements.editWorkout.addEventListener("click", openEditDialog); elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
 dayCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", () => {
   const checked = dayCheckboxes.filter((item) => item.checked); if (checked.length > 5) { checkbox.checked = false; elements.scheduleError.textContent = "Choose no more than five training days."; } else { elements.scheduleError.textContent = ""; }
