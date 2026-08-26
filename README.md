@@ -1,6 +1,6 @@
 # My Training Week
 
-A dependency-free, mobile-friendly personal gym schedule. Users choose their starting weekday and number of consecutive training days. The five-session split includes targeted warm-ups, working sets and important form notes. Workouts are editable and completion data is stored locally in the visitor's browser.
+A dependency-free, mobile-first personal gym schedule. Users choose their exact training weekdays and which selected day begins the five-workout sequence. Every exercise includes sets, reps, rest, tempo, primary and secondary targets, plus a visual muscle map. Completion data is stored locally in the visitor's browser.
 
 ## Run locally
 

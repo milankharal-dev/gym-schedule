@@ -2,255 +2,178 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#131a16" />
-    <meta
-      name="description"
-      content="A simple, private weekly gym schedule that stays on your device."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#101410" />
+    <meta name="description" content="A mobile-first personal strength training schedule." />
     <title>My Training Week</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <header class="topbar">
+    <div class="app-shell">
+      <header class="app-header">
         <a class="brand" href="./" aria-label="My Training Week home">
           <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 28 28">
-              <path d="M8 11v6M20 11v6M4.5 9v10M23.5 9v10M8 14h12" />
-            </svg>
+            <svg viewBox="0 0 28 28"><path d="M8 11v6M20 11v6M4.5 9v10M23.5 9v10M8 14h12" /></svg>
           </span>
-          <span>My Training Week</span>
+          <span>Training Week</span>
         </a>
-        <button class="icon-button" id="openSettings" type="button" aria-label="Open settings">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.2 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4h-.1v-4h.1A1.7 1.7 0 0 0 4.2 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.6 4.2a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1v-.1h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.6c.38.28.7.62.91 1 .2.32.3.7.3 1.1h.1v4h-.1c-.46 0-.88.14-1.21.3Z" />
-          </svg>
-        </button>
+        <div class="header-actions">
+          <div class="mini-progress" aria-label="Weekly completion">
+            <strong id="progressPercent">0%</strong>
+            <span id="progressLabel">0/0</span>
+          </div>
+          <button class="icon-button" id="openSettings" type="button" aria-label="Open settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.2 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4h-.1v-4h.1A1.7 1.7 0 0 0 4.2 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.6 4.2a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1v-.1h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.6c.38.28.7.62.91 1 .2.32.3.7.3 1.1h.1v4h-.1c-.46 0-.88.14-1.21.3Z" /></svg>
+          </button>
+        </div>
       </header>
 
       <main>
-        <section class="hero" aria-labelledby="greeting">
-          <div>
-            <p class="eyebrow" id="fullDate"></p>
-            <h1 id="greeting">Ready to move?</h1>
-            <p class="hero-copy" id="todaySummary"></p>
-          </div>
-          <div class="week-progress" aria-label="Weekly progress">
-            <div class="progress-ring" id="progressRing">
-              <span id="progressPercent">0%</span>
-            </div>
-            <div>
-              <strong id="progressLabel">0 of 0</strong>
-              <span>exercises this week</span>
-            </div>
-          </div>
+        <section class="welcome">
+          <p class="eyebrow" id="fullDate"></p>
+          <h1 id="greeting">Ready to train?</h1>
+          <p id="todaySummary"></p>
         </section>
 
-        <section class="schedule-section" aria-labelledby="scheduleHeading">
-          <div class="section-heading">
+        <section class="week-section" aria-labelledby="weekHeading">
+          <div class="section-row">
             <div>
-              <p class="eyebrow">Weekly plan</p>
-              <h2 id="scheduleHeading">Your schedule</h2>
+              <p class="eyebrow">This week</p>
+              <h2 id="weekHeading">Your plan</h2>
             </div>
-            <div class="schedule-meta">
-              <p class="week-range" id="weekRange"></p>
-              <button class="schedule-config" id="openScheduleSettings" type="button"></button>
-            </div>
+            <button class="plan-button" id="openScheduleSettings" type="button">Edit days</button>
           </div>
-
           <div class="day-tabs" id="dayTabs" role="tablist" aria-label="Days of the week"></div>
-
-          <article class="workout-card" id="workoutCard">
-            <div class="workout-card-header">
-              <div>
-                <div class="day-badge" id="selectedDayLabel"></div>
-                <h3 id="workoutTitle"></h3>
-                <p id="workoutFocus"></p>
-                <div class="workout-meta" id="workoutMeta"></div>
-              </div>
-              <button class="secondary-button" id="editWorkout" type="button">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="m14.7 6.3 3 3M4 20l3.7-.7L19 8a2.12 2.12 0 0 0-3-3L4.7 16.3 4 20Z" />
-                </svg>
-                Edit workout
-              </button>
-            </div>
-
-            <div id="workoutDetails">
-              <section class="warmup-panel" aria-labelledby="warmupHeading">
-                <div class="content-heading">
-                  <span class="content-icon" aria-hidden="true">01</span>
-                  <div>
-                    <p class="eyebrow">Prepare to train</p>
-                    <h4 id="warmupHeading">Warm-up</h4>
-                  </div>
-                </div>
-                <ul class="warmup-list" id="warmupList"></ul>
-              </section>
-
-              <div class="content-heading working-heading">
-                <span class="content-icon" aria-hidden="true">02</span>
-                <div>
-                  <p class="eyebrow">Main session</p>
-                  <h4>Working sets</h4>
-                </div>
-              </div>
-              <div class="exercise-list" id="exerciseList"></div>
-
-              <section class="notes-panel" aria-labelledby="notesHeading">
-                <div class="content-heading">
-                  <span class="content-icon" aria-hidden="true">!</span>
-                  <div>
-                    <p class="eyebrow">Before you lift</p>
-                    <h4 id="notesHeading">Important notes</h4>
-                  </div>
-                </div>
-                <ul id="notesList"></ul>
-              </section>
-            </div>
-            <div class="rest-state" id="restState" hidden>
-              <span class="rest-icon" aria-hidden="true">↗</span>
-              <h4>Recovery is part of the plan.</h4>
-              <p>Take the day off, walk or move gently if it feels good, and come back recovered.</p>
-            </div>
-          </article>
-
-          <section class="program-guide" aria-label="Training guidance">
-            <article>
-              <span>Progress</span>
-              <h4>Own the reps first.</h4>
-              <p>When every set reaches the top of its rep range with controlled form, add the smallest practical weight next time.</p>
-            </article>
-            <article>
-              <span>Effort</span>
-              <h4>Keep clean reps in reserve.</h4>
-              <p>Choose loads you can control through a comfortable range. End the set before technique breaks down.</p>
-            </article>
-            <article>
-              <span>Safety</span>
-              <h4>Pain changes the plan.</h4>
-              <p>Stop for sharp or increasing pain, dizziness, or feeling unwell. Ask a qualified professional when unsure.</p>
-            </article>
-          </section>
         </section>
+
+        <section class="workout-hero" id="workoutHero">
+          <div class="workout-hero-top">
+            <span class="workout-number" id="selectedDayLabel"></span>
+            <span class="workout-duration" id="workoutDuration"></span>
+          </div>
+          <h2 id="workoutTitle"></h2>
+          <p id="workoutFocus"></p>
+          <div class="workout-hero-footer">
+            <span id="exerciseCount"></span>
+            <button class="edit-button" id="editWorkout" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 6.3 3 3M4 20l3.7-.7L19 8a2.12 2.12 0 0 0-3-3L4.7 16.3 4 20Z" /></svg>
+              Edit
+            </button>
+          </div>
+        </section>
+
+        <div id="workoutDetails">
+          <details class="info-card warmup-card" open>
+            <summary>
+              <span class="step-number">01</span>
+              <span><small>Prepare</small><strong>Warm-up</strong></span>
+              <span class="chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <ul id="warmupList"></ul>
+          </details>
+
+          <section class="exercise-section" aria-labelledby="exerciseHeading">
+            <div class="content-title">
+              <span class="step-number">02</span>
+              <div><p class="eyebrow">Main session</p><h2 id="exerciseHeading">Exercises</h2></div>
+            </div>
+            <p class="tempo-key"><strong>Tempo:</strong> lowering · pause · lifting · pause</p>
+            <div class="exercise-list" id="exerciseList"></div>
+          </section>
+
+          <details class="info-card notes-card" open>
+            <summary>
+              <span class="step-number alert">!</span>
+              <span><small>Read first</small><strong>Important notes</strong></span>
+              <span class="chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <ul id="notesList"></ul>
+          </details>
+        </div>
+
+        <section class="rest-state" id="restState" hidden>
+          <span aria-hidden="true">↗</span>
+          <h2>Recovery day</h2>
+          <p>Walk or move gently if it feels good. Hydrate, eat well, and arrive ready for your next session.</p>
+        </section>
+
+        <details class="training-guide">
+          <summary>Training and safety guide <span aria-hidden="true">+</span></summary>
+          <div>
+            <p><strong>Progress:</strong> When every set reaches the top of its rep range with controlled form, add the smallest practical weight next time.</p>
+            <p><strong>Effort:</strong> End the set before technique breaks down. The final reps should feel challenging but controlled.</p>
+            <p><strong>Safety:</strong> Stop for sharp or increasing pain, dizziness, chest discomfort, or feeling unwell. Ask a qualified professional when unsure.</p>
+          </div>
+        </details>
       </main>
 
-      <footer>
-        <span>Your schedule is saved privately on this device.</span>
-        <span id="saveStatus" role="status" aria-live="polite">All changes saved</span>
-      </footer>
+      <footer><span>Saved privately on this device</span><span id="saveStatus" role="status" aria-live="polite">All changes saved</span></footer>
     </div>
+
+    <dialog class="modal" id="settingsDialog">
+      <form method="dialog" id="settingsForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">Personalize</p><h2>Plan settings</h2></div>
+          <button class="close-button" value="cancel" type="submit" aria-label="Close settings">×</button>
+        </div>
+        <label class="field"><span>Your name</span><input id="profileName" maxlength="30" placeholder="Your name" /></label>
+        <label class="field">
+          <span>First training day</span>
+          <select id="startDay">
+            <option value="monday">Monday</option><option value="tuesday">Tuesday</option><option value="wednesday">Wednesday</option><option value="thursday">Thursday</option><option value="friday">Friday</option><option value="saturday">Saturday</option><option value="sunday">Sunday</option>
+          </select>
+        </label>
+        <fieldset class="day-picker">
+          <legend>Which days will you train? <small>Choose up to five</small></legend>
+          <div>
+            <label><input type="checkbox" value="monday" /><span>Mon</span></label>
+            <label><input type="checkbox" value="tuesday" /><span>Tue</span></label>
+            <label><input type="checkbox" value="wednesday" /><span>Wed</span></label>
+            <label><input type="checkbox" value="thursday" /><span>Thu</span></label>
+            <label><input type="checkbox" value="friday" /><span>Fri</span></label>
+            <label><input type="checkbox" value="saturday" /><span>Sat</span></label>
+            <label><input type="checkbox" value="sunday" /><span>Sun</span></label>
+          </div>
+        </fieldset>
+        <p class="form-error" id="scheduleError" role="alert"></p>
+        <p class="helper-text">Workout 1 begins on your first training day. The remaining selected days receive workouts 2–5 in calendar order.</p>
+        <button class="danger-button" id="resetData" type="button">Reset app data</button>
+        <div class="modal-actions"><button class="secondary-button" value="cancel" type="submit">Cancel</button><button class="primary-button" value="default" type="submit">Save plan</button></div>
+      </form>
+    </dialog>
 
     <dialog class="modal" id="editDialog">
       <form method="dialog" id="editForm">
         <div class="modal-header">
-          <div>
-            <p class="eyebrow" id="editDayLabel">Edit day</p>
-            <h2>Edit workout</h2>
-          </div>
-          <button class="icon-button" value="cancel" type="submit" aria-label="Close edit dialog">×</button>
+          <div><p class="eyebrow" id="editDayLabel">Edit workout</p><h2>Workout details</h2></div>
+          <button class="close-button" value="cancel" type="submit" aria-label="Close editor">×</button>
         </div>
-
-        <label class="field">
-          <span>Workout name</span>
-          <input id="editTitle" name="title" maxlength="40" placeholder="e.g. Push day" required />
-        </label>
-        <label class="field">
-          <span>Focus or note</span>
-          <input id="editFocus" name="focus" maxlength="80" placeholder="e.g. Chest, shoulders & triceps" />
-        </label>
-
-        <div class="exercise-editor-heading">
-          <span>Exercises</span>
-          <button class="text-button" id="addExercise" type="button">+ Add exercise</button>
-        </div>
+        <label class="field"><span>Workout name</span><input id="editTitle" maxlength="40" required /></label>
+        <label class="field"><span>Focus</span><input id="editFocus" maxlength="80" /></label>
+        <div class="editor-heading"><strong>Exercises</strong><button id="addExercise" type="button">+ Add</button></div>
         <div class="exercise-editor" id="exerciseEditor"></div>
-
-        <div class="modal-actions">
-          <button class="secondary-button" value="cancel" type="submit">Cancel</button>
-          <button class="primary-button" id="saveWorkout" value="default" type="submit">Save workout</button>
-        </div>
-      </form>
-    </dialog>
-
-    <dialog class="modal small-modal" id="settingsDialog">
-      <form method="dialog" id="settingsForm">
-        <div class="modal-header">
-          <div>
-            <p class="eyebrow">Preferences</p>
-            <h2>Settings</h2>
-          </div>
-          <button class="icon-button" value="cancel" type="submit" aria-label="Close settings">×</button>
-        </div>
-
-        <label class="field">
-          <span>Your name</span>
-          <input id="profileName" name="profileName" maxlength="30" placeholder="Your name" />
-        </label>
-        <div class="settings-grid">
-          <label class="field">
-            <span>Plan starts on</span>
-            <select id="startDay" name="startDay">
-              <option value="monday">Monday</option>
-              <option value="tuesday">Tuesday</option>
-              <option value="wednesday">Wednesday</option>
-              <option value="thursday">Thursday</option>
-              <option value="friday">Friday</option>
-              <option value="saturday">Saturday</option>
-              <option value="sunday">Sunday</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Days to train</span>
-            <select id="trainingDayCount" name="trainingDayCount">
-              <option value="1">1 day</option>
-              <option value="2">2 days</option>
-              <option value="3">3 days</option>
-              <option value="4">4 days</option>
-              <option value="5">5 days — full split</option>
-            </select>
-          </label>
-        </div>
-        <p class="schedule-note">
-          Workouts run in order from your starting day. Choose five days to include the complete split.
-        </p>
-        <p class="privacy-note">
-          This version has no account or cloud database. Your schedule and progress stay in this browser.
-        </p>
-        <button class="danger-button" id="resetData" type="button">Reset to sample schedule</button>
-
-        <div class="modal-actions">
-          <button class="secondary-button" value="cancel" type="submit">Cancel</button>
-          <button class="primary-button" id="saveSettings" value="default" type="submit">Save settings</button>
-        </div>
+        <div class="modal-actions"><button class="secondary-button" value="cancel" type="submit">Cancel</button><button class="primary-button" value="default" type="submit">Save workout</button></div>
       </form>
     </dialog>
 
     <template id="exerciseEditorRow">
       <div class="editor-row">
-        <label>
-          <span class="sr-only">Exercise name</span>
-          <input class="exercise-name-input" maxlength="50" placeholder="Exercise name" required />
-        </label>
-        <label>
-          <span class="sr-only">Sets</span>
-          <input class="sets-input" maxlength="12" placeholder="Sets" aria-label="Sets" />
-        </label>
-        <label>
-          <span class="sr-only">Reps</span>
-          <input class="reps-input" maxlength="16" placeholder="Reps" aria-label="Reps" />
-        </label>
         <button class="remove-exercise" type="button" aria-label="Remove exercise">×</button>
+        <label class="field full"><span>Exercise</span><input class="exercise-name-input" maxlength="50" required /></label>
+        <div class="editor-metrics">
+          <label class="field"><span>Sets</span><input class="sets-input" maxlength="8" /></label>
+          <label class="field"><span>Reps</span><input class="reps-input" maxlength="14" /></label>
+          <label class="field"><span>Rest</span><input class="rest-input" maxlength="12" /></label>
+          <label class="field"><span>Tempo</span><input class="tempo-input" maxlength="10" /></label>
+        </div>
+        <label class="field"><span>Primary target</span><input class="target-input" maxlength="30" /></label>
+        <label class="field"><span>Secondary muscles</span><input class="secondary-input" maxlength="45" /></label>
+        <label class="field"><span>Muscle-map region</span><select class="region-input"><option value="chest">Chest</option><option value="shoulders">Shoulders</option><option value="triceps">Triceps</option><option value="biceps">Biceps</option><option value="lats">Lats</option><option value="upper-back">Upper back</option><option value="core">Core</option><option value="quads">Quads</option><option value="hamstrings">Hamstrings</option><option value="glutes">Glutes</option><option value="calves">Calves</option></select></label>
       </div>
     </template>
 
