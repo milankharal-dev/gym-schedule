@@ -1,5 +1,12 @@
 const STORAGE_KEY = "gym-schedule-v3";
 const MUSCLE_IMAGE = "./assets/muscle-anatomy.png";
+const exerciseAtlases = {
+  "legs-full": { src: "./assets/exercises-legs.png", rows: 3 },
+  "chest-triceps": { src: "./assets/exercises-chest-triceps.png", rows: 3 },
+  back: { src: "./assets/exercises-back.png", rows: 3 },
+  "shoulders-core": { src: "./assets/exercises-shoulders-core.png", rows: 4 },
+  "arms-chest-accessory": { src: "./assets/exercises-arms-chest.png", rows: 3 },
+};
 
 const dayDefinitions = [
   { id: "monday", label: "Monday", short: "Mon" },
@@ -230,9 +237,27 @@ function createMuscleMap(exercise) {
   const image = document.createElement("img"); image.src = MUSCLE_IMAGE; image.alt = ""; map.append(image);
   const positions = [...new Set(exercise.regions || ["core"])].flatMap((region) => markerPositions[region] || []);
   positions.forEach(([left, top]) => { const marker = makeElement("span", "muscle-marker"); marker.style.left = `${left}%`; marker.style.top = `${top}%`; map.append(marker); });
+  map.append(makeElement("span", "visual-label", "Target"));
   return map;
 }
-function createExerciseCard(workout, exercise) {
+function createMovementVisual(workout, exercise, index) {
+  const atlas = exerciseAtlases[workout.workoutId];
+  const visual = makeElement("div", "movement-visual");
+  visual.setAttribute("role", "img");
+  visual.setAttribute("aria-label", `${exercise.name} visual reference`);
+  if (atlas) {
+    if (atlas.rows === 4) visual.classList.add("is-landscape");
+    const column = index % 2;
+    const row = Math.floor(index / 2);
+    const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
+    visual.style.backgroundImage = `url("${atlas.src}")`;
+    visual.style.backgroundSize = `200% ${atlas.rows * 100}%`;
+    visual.style.backgroundPosition = `${column * 100}% ${verticalPosition}%`;
+  }
+  visual.append(makeElement("span", "visual-label", "Movement"));
+  return visual;
+}
+function createExerciseCard(workout, exercise, index) {
   const key = completionKey(workout, exercise); const complete = Boolean(weekCompletion()[key]);
   const card = makeElement("article", `exercise-card${complete ? " is-complete" : ""}`);
   const top = makeElement("div", "exercise-top"); const toggle = makeElement("label", "completion-toggle");
@@ -241,13 +266,15 @@ function createExerciseCard(workout, exercise) {
   const copy = makeElement("div", "exercise-copy"); copy.append(makeElement("h3", "exercise-name", exercise.name));
   const target = makeElement("p", "target-copy"); const strong = makeElement("strong", "", exercise.target || "Target");
   target.append(strong, document.createTextNode(exercise.secondary ? ` · ${exercise.secondary}` : "")); copy.append(target);
-  top.append(toggle, copy, createMuscleMap(exercise));
+  top.append(toggle, copy);
+  const referenceVisuals = makeElement("div", "reference-visuals");
+  referenceVisuals.append(createMovementVisual(workout, exercise, index), createMuscleMap(exercise));
   const prescription = makeElement("div", "prescription");
   [["Sets", exercise.sets], ["Reps", exercise.reps], ["Rest", exercise.rest]].forEach(([label, value]) => {
     const item = makeElement("div"); item.append(makeElement("span", "", label), makeElement("strong", "", value || "—")); prescription.append(item);
   });
   const tempo = makeElement("div", "tempo-row"); tempo.append(makeElement("span", "", "Tempo"), makeElement("strong", "", exercise.tempo || "Controlled"));
-  card.append(top, prescription, tempo); return card;
+  card.append(top, referenceVisuals, prescription, tempo); return card;
 }
 function renderWorkout() {
   const workout = getSchedule().find((day) => day.dayId === selectedDayId); const day = dayDefinitions.find((item) => item.id === selectedDayId);
@@ -257,7 +284,7 @@ function renderWorkout() {
   elements.workoutTitle.textContent = workout.title; elements.workoutFocus.textContent = workout.focus;
   elements.exerciseCount.textContent = `${workout.exercises.length} exercises`;
   renderTextList(elements.warmupList, workout.warmup); renderTextList(elements.notesList, workout.notes);
-  elements.exerciseList.replaceChildren(...workout.exercises.map((exercise) => createExerciseCard(workout, exercise)));
+  elements.exerciseList.replaceChildren(...workout.exercises.map((exercise, index) => createExerciseCard(workout, exercise, index)));
 }
 function renderProgress() {
   const completion = weekCompletion(); const keys = getSchedule().flatMap((workout) => workout.exercises.map((exercise) => completionKey(workout, exercise)));
