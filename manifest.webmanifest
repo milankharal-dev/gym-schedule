@@ -1,7 +1,7 @@
 {
   "name": "My Training Week",
   "short_name": "Training Week",
-  "description": "A simple weekly gym schedule that stays on your device.",
+  "description": "A personal weekly gym schedule with a separate exercise-reference library.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

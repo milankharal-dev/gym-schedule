@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=12" />
+    <link rel="stylesheet" href="./styles.css?v=13" />
   </head>
   <body>
     <div class="app-shell">
@@ -27,6 +27,9 @@
             <strong id="progressPercent">0%</strong>
             <span id="progressLabel">0/0</span>
           </div>
+          <a class="icon-button library-shortcut" href="./library.html" aria-label="Open exercise library">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h5.5A2.5 2.5 0 0 1 13 7v12a2.5 2.5 0 0 0-2.5-2.5H5V4.5Z" /><path d="M19 4.5h-3.5A2.5 2.5 0 0 0 13 7v12a2.5 2.5 0 0 1 2.5-2.5H19V4.5Z" /></svg>
+          </a>
           <button class="icon-button" id="openSettings" type="button" aria-label="Open settings">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1A1.7 1.7 0 0 0 8.6 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.2 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4h-.1v-4h.1A1.7 1.7 0 0 0 4.2 8.6a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8.6 4.2a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1v-.1h4v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 8.6c.38.28.7.62.91 1 .2.32.3.7.3 1.1h.1v4h-.1c-.46 0-.88.14-1.21.3Z" /></svg>
           </button>
@@ -73,10 +76,6 @@
           <p id="workoutFocus"></p>
           <div class="workout-hero-footer">
             <span id="exerciseCount"></span>
-            <button class="edit-button" id="editWorkout" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 6.3 3 3M4 20l3.7-.7L19 8a2.12 2.12 0 0 0-3-3L4.7 16.3 4 20Z" /></svg>
-              Edit
-            </button>
           </div>
         </section>
 
@@ -165,20 +164,6 @@
       </form>
     </dialog>
 
-    <dialog class="modal" id="editDialog">
-      <form method="dialog" id="editForm">
-        <div class="modal-header">
-          <div><p class="eyebrow" id="editDayLabel">Edit workout</p><h2>Workout details</h2></div>
-          <button class="close-button" value="cancel" type="submit" aria-label="Close editor">×</button>
-        </div>
-        <label class="field"><span>Workout name</span><input id="editTitle" maxlength="40" required /></label>
-        <label class="field"><span>Focus</span><input id="editFocus" maxlength="80" /></label>
-        <div class="editor-heading"><strong>Exercises</strong><button id="addExercise" type="button">+ Add</button></div>
-        <div class="exercise-editor" id="exerciseEditor"></div>
-        <div class="modal-actions"><button class="secondary-button" value="cancel" type="submit">Cancel</button><button class="primary-button" value="default" type="submit">Save workout</button></div>
-      </form>
-    </dialog>
-
     <dialog class="visual-dialog" id="visualDialog" aria-labelledby="visualDialogTitle">
       <button class="visual-dialog-close" id="closeVisualDialog" type="button" aria-label="Close expanded exercise image">×</button>
       <div class="visual-dialog-copy">
@@ -189,22 +174,6 @@
       <p class="visual-dialog-note">Use this as a movement reference. Follow the written tempo and use a comfortable, controlled range.</p>
     </dialog>
 
-    <template id="exerciseEditorRow">
-      <div class="editor-row">
-        <button class="remove-exercise" type="button" aria-label="Remove exercise">×</button>
-        <label class="field full"><span>Exercise</span><input class="exercise-name-input" maxlength="50" required /></label>
-        <div class="editor-metrics">
-          <label class="field"><span>Sets</span><input class="sets-input" maxlength="8" /></label>
-          <label class="field"><span>Reps</span><input class="reps-input" maxlength="14" /></label>
-          <label class="field"><span>Rest</span><input class="rest-input" maxlength="12" /></label>
-          <label class="field"><span>Tempo</span><input class="tempo-input" maxlength="40" /></label>
-        </div>
-        <label class="field"><span>Primary target</span><input class="target-input" maxlength="30" /></label>
-        <label class="field"><span>Secondary muscles</span><input class="secondary-input" maxlength="45" /></label>
-        <label class="field"><span>Muscle-map region</span><select class="region-input"><option value="chest">Chest</option><option value="shoulders">Shoulders</option><option value="triceps">Triceps</option><option value="biceps">Biceps</option><option value="lats">Lats</option><option value="upper-back">Upper back</option><option value="lower-back">Lower back</option><option value="core">Core</option><option value="quads">Quads</option><option value="adductors">Adductors</option><option value="hamstrings">Hamstrings</option><option value="glutes">Glutes</option><option value="calves">Calves</option></select></label>
-      </div>
-    </template>
-
-    <script src="./app.js?v=12" defer></script>
+    <script src="./app.js?v=13" defer></script>
   </body>
 </html>

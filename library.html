@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1020" />
+    <meta name="description" content="Browse gym exercises by the muscles they train." />
+    <title>Exercise Library · Training Week</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./library.css?v=1" />
+  </head>
+  <body>
+    <div class="library-shell">
+      <header class="library-header">
+        <a class="back-link" href="./" aria-label="Back to weekly schedule">
+          <span aria-hidden="true">←</span>
+          <span>Schedule</span>
+        </a>
+        <span class="library-brand">Exercise Atlas</span>
+        <span class="header-spacer" aria-hidden="true"></span>
+      </header>
+
+      <main>
+        <section class="library-hero">
+          <span class="independent-label">Independent reference</span>
+          <h1>Explore exercises by muscle.</h1>
+          <p>Browse movement options without changing your weekly schedule, equipment mode, or completion history.</p>
+        </section>
+
+        <section class="body-explorer" aria-labelledby="bodyExplorerTitle">
+          <div class="body-copy">
+            <p class="section-kicker">Body map</p>
+            <h2 id="bodyExplorerTitle">Choose a muscle group</h2>
+            <p id="selectedMuscleDescription"></p>
+          </div>
+          <div class="anatomy-stage" aria-hidden="true">
+            <img src="./assets/muscle-anatomy.png" alt="" />
+            <div id="libraryMarkers"></div>
+          </div>
+          <div class="muscle-picker" id="musclePicker" aria-label="Muscle groups"></div>
+        </section>
+
+        <section class="library-results" aria-labelledby="libraryResultsTitle">
+          <div class="results-heading">
+            <div>
+              <p class="section-kicker">Exercise options</p>
+              <h2 id="libraryResultsTitle">Chest</h2>
+            </div>
+            <span id="libraryResultCount">0 exercises</span>
+          </div>
+
+          <div class="library-filters">
+            <label class="library-search">
+              <span class="sr-only">Search selected muscle group</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+              <input id="librarySearch" type="search" placeholder="Search this muscle group" autocomplete="off" />
+            </label>
+            <label class="equipment-filter">
+              <span>Equipment</span>
+              <select id="libraryEquipment">
+                <option value="all">All equipment</option>
+                <option value="machine">Machine</option>
+                <option value="cable">Cable</option>
+                <option value="dumbbell">Dumbbell</option>
+                <option value="barbell">Barbell</option>
+                <option value="bodyweight">Bodyweight</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="library-grid" id="libraryGrid"></div>
+          <div class="empty-library" id="emptyLibrary" hidden>
+            <span aria-hidden="true">⌕</span>
+            <h3>No matching exercises</h3>
+            <p>Try a different equipment filter or search term.</p>
+          </div>
+        </section>
+
+        <aside class="library-note">
+          <strong>Reference, not a second workout</strong>
+          <p>Use this library to understand options. Follow the programmed volume in your schedule instead of adding every exercise shown here.</p>
+        </aside>
+      </main>
+
+      <footer><a href="./">Return to Training Week</a><span>Exercise reference library</span></footer>
+    </div>
+
+    <dialog class="library-visual-dialog" id="libraryVisualDialog" aria-labelledby="libraryVisualTitle">
+      <button id="closeLibraryVisual" type="button" aria-label="Close expanded exercise image">×</button>
+      <div class="dialog-copy">
+        <p id="libraryVisualEquipment">Exercise reference</p>
+        <h2 id="libraryVisualTitle">Exercise</h2>
+      </div>
+      <div class="library-expanded-visual" id="libraryExpandedVisual" role="img"></div>
+      <p class="dialog-note">Use the image as a reference and keep the movement controlled through a comfortable range.</p>
+    </dialog>
+
+    <script src="./library.js?v=1" defer></script>
+  </body>
+</html>

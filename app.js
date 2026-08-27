@@ -1,6 +1,6 @@
 const STORAGE_KEY = "gym-schedule-v5";
 const LEGACY_STORAGE_KEYS = ["gym-schedule-v4", "gym-schedule-v3"];
-const PROGRAM_VERSION = 3;
+const PROGRAM_VERSION = 4;
 const MUSCLE_IMAGE = "./assets/muscle-anatomy.png";
 const exerciseAtlases = {
   best: {
@@ -638,7 +638,7 @@ function loadState() {
       startDayId: trainingDays.includes(stored.startDayId) ? stored.startDayId : trainingDays[0],
       trainingDays,
       programVersion: PROGRAM_VERSION,
-      workouts: Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
+      workouts: !needsProgramUpdate && Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
         const saved = stored.workouts.find((workout) => workout.id === template.id);
         return saved ? { ...clone(template), ...saved } : clone(template);
       }) : clone(programWorkouts),
@@ -661,13 +661,11 @@ const elements = {
   workoutHero: $("#workoutHero"), selectedDayLabel: $("#selectedDayLabel"), workoutDuration: $("#workoutDuration"),
   workoutTitle: $("#workoutTitle"), workoutFocus: $("#workoutFocus"), exerciseCount: $("#exerciseCount"),
   workoutDetails: $("#workoutDetails"), warmupList: $("#warmupList"), exerciseList: $("#exerciseList"), notesList: $("#notesList"),
-  restState: $("#restState"), editWorkout: $("#editWorkout"), openSettings: $("#openSettings"),
+  restState: $("#restState"), openSettings: $("#openSettings"),
   openScheduleSettings: $("#openScheduleSettings"), settingsDialog: $("#settingsDialog"), settingsForm: $("#settingsForm"),
   profileName: $("#profileName"), equipmentProfile: $("#equipmentProfile"), equipmentProfileHelp: $("#equipmentProfileHelp"),
   startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
-  editDialog: $("#editDialog"), editForm: $("#editForm"), editDayLabel: $("#editDayLabel"), editTitle: $("#editTitle"),
-  editFocus: $("#editFocus"), exerciseEditor: $("#exerciseEditor"), editorTemplate: $("#exerciseEditorRow"),
-  addExercise: $("#addExercise"), saveStatus: $("#saveStatus"), visualDialog: $("#visualDialog"),
+  saveStatus: $("#saveStatus"), visualDialog: $("#visualDialog"),
   expandedVisual: $("#expandedVisual"), visualDialogTitle: $("#visualDialogTitle"), visualDialogProfile: $("#visualDialogProfile"),
   closeVisualDialog: $("#closeVisualDialog"),
 };
@@ -897,23 +895,6 @@ function renderEquipmentProfile() {
 }
 function renderAll() { renderHeader(); renderTabs(); renderEquipmentProfile(); renderWorkout(); renderProgress(); }
 
-function makeId(name) {
-  const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "exercise";
-  return `${slug}-${globalThis.crypto?.randomUUID?.().slice(0, 6) || Math.random().toString(36).slice(2, 8)}`;
-}
-function addEditorRow(exercise = {}) {
-  const fragment = elements.editorTemplate.content.cloneNode(true); const row = fragment.querySelector(".editor-row"); row.dataset.exerciseId = exercise.id || "";
-  const values = { ".exercise-name-input": exercise.name, ".sets-input": exercise.sets, ".reps-input": exercise.reps, ".rest-input": exercise.rest, ".tempo-input": exercise.tempo, ".target-input": exercise.target, ".secondary-input": exercise.secondary };
-  Object.entries(values).forEach(([selector, value]) => { row.querySelector(selector).value = value || ""; });
-  row.querySelector(".region-input").value = exercise.regions?.[0] || "core"; elements.exerciseEditor.append(fragment);
-}
-function openEditDialog() {
-  const scheduled = getSchedule().find((day) => day.dayId === selectedDayId); if (scheduled.isRest) return;
-  const activeWorkouts = state.equipmentProfile === "best" ? state.bestMixWorkouts : state.workouts;
-  const workout = activeWorkouts.find((item) => item.id === scheduled.workoutId); elements.editDayLabel.textContent = `Workout ${scheduled.sequence}`;
-  elements.editTitle.value = workout.title; elements.editFocus.value = workout.focus; elements.exerciseEditor.replaceChildren();
-  workout.exercises.forEach(addEditorRow); elements.editDialog.showModal();
-}
 function openSettingsDialog() {
   elements.profileName.value = state.profileName; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
   dayCheckboxes.forEach((checkbox) => { checkbox.checked = state.trainingDays.includes(checkbox.value); }); elements.settingsDialog.showModal();
@@ -936,7 +917,7 @@ elements.exerciseList.addEventListener("keydown", (event) => {
   event.preventDefault(); openVisualDialog(visual);
 });
 elements.closeVisualDialog.addEventListener("click", () => elements.visualDialog.close());
-elements.editWorkout.addEventListener("click", openEditDialog); elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
+elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
 elements.equipmentProfile.addEventListener("change", () => {
   const profileId = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
   state.equipmentProfile = profileId;
@@ -953,28 +934,10 @@ elements.settingsForm.addEventListener("submit", (event) => {
   state.profileName = elements.profileName.value.trim(); state.startDayId = elements.startDay.value; state.trainingDays = selected; saveState(); elements.settingsDialog.close(); renderAll();
 });
 elements.resetData.addEventListener("click", () => {
-  if (!confirm("Reset your plan, edits and completion history? This cannot be undone on this device.")) return;
+  if (!confirm("Reset your plan settings and completion history? This cannot be undone on this device.")) return;
   state = defaultState(); saveState(); elements.settingsDialog.close(); selectedDayId = getDayId(new Date()); renderAll();
 });
-elements.addExercise.addEventListener("click", () => { addEditorRow(); elements.exerciseEditor.lastElementChild?.querySelector(".exercise-name-input")?.focus(); });
-elements.exerciseEditor.addEventListener("click", (event) => { const button = event.target.closest(".remove-exercise"); if (button) button.closest(".editor-row").remove(); });
-elements.editForm.addEventListener("submit", (event) => {
-  if (event.submitter?.value === "cancel") return; event.preventDefault(); if (!elements.editForm.reportValidity()) return;
-  const scheduled = getSchedule().find((day) => day.dayId === selectedDayId); const activeWorkouts = state.equipmentProfile === "best" ? state.bestMixWorkouts : state.workouts;
-  const workout = activeWorkouts.find((item) => item.id === scheduled.workoutId);
-  workout.title = elements.editTitle.value.trim(); workout.focus = elements.editFocus.value.trim();
-  workout.exercises = Array.from(elements.exerciseEditor.querySelectorAll(".editor-row")).map((row) => {
-    const name = row.querySelector(".exercise-name-input").value.trim();
-    const previous = workout.exercises.find((exercise) => exercise.id === row.dataset.exerciseId) || {};
-    return { ...previous,
-      id: row.dataset.exerciseId || makeId(name), name, sets: row.querySelector(".sets-input").value.trim(), reps: row.querySelector(".reps-input").value.trim(),
-      rest: row.querySelector(".rest-input").value.trim(), tempo: row.querySelector(".tempo-input").value.trim(), target: row.querySelector(".target-input").value.trim(),
-      secondary: row.querySelector(".secondary-input").value.trim(), regions: [row.querySelector(".region-input").value],
-    };
-  });
-  saveState(); elements.editDialog.close(); renderAll();
-});
-[elements.settingsDialog, elements.editDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
+[elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=12"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=13"));
 renderAll();

@@ -1,5 +1,9 @@
-const CACHE_NAME = "training-week-v12";
-const APP_ASSETS = ["./", "./index.html", "./styles.css?v=12", "./app.js?v=12", "./manifest.webmanifest", "./icon.svg", "./assets/muscle-anatomy.png"];
+const CACHE_NAME = "training-week-v13";
+const APP_ASSETS = [
+  "./", "./index.html", "./styles.css?v=13", "./app.js?v=13",
+  "./library.html", "./library.css?v=1", "./library.js?v=1",
+  "./manifest.webmanifest", "./icon.svg", "./assets/muscle-anatomy.png",
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_ASSETS)));
