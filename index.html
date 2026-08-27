@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=10" />
+    <link rel="stylesheet" href="./styles.css?v=11" />
   </head>
   <body>
     <div class="app-shell">
@@ -179,6 +179,16 @@
       </form>
     </dialog>
 
+    <dialog class="visual-dialog" id="visualDialog" aria-labelledby="visualDialogTitle">
+      <button class="visual-dialog-close" id="closeVisualDialog" type="button" aria-label="Close expanded exercise image">×</button>
+      <div class="visual-dialog-copy">
+        <p class="eyebrow" id="visualDialogProfile">Exercise reference</p>
+        <h2 id="visualDialogTitle">Exercise visual</h2>
+      </div>
+      <div class="expanded-visual" id="expandedVisual" role="img"></div>
+      <p class="visual-dialog-note">Use this as a movement reference. Follow the written tempo and use a comfortable, controlled range.</p>
+    </dialog>
+
     <template id="exerciseEditorRow">
       <div class="editor-row">
         <button class="remove-exercise" type="button" aria-label="Remove exercise">×</button>
@@ -195,6 +205,6 @@
       </div>
     </template>
 
-    <script src="./app.js?v=10" defer></script>
+    <script src="./app.js?v=11" defer></script>
   </body>
 </html>

@@ -7,13 +7,14 @@ const exerciseAtlases = {
     "legs-full": { src: "./assets/best-mix-legs-v1.png", rows: 4, layout: "wide" },
     "chest-triceps": { src: "./assets/best-mix-chest-triceps-v1.png", rows: 3, layout: "wide" },
     back: { src: "./assets/best-mix-back-v1.png", rows: 3, layout: "wide" },
-    "shoulders-core": { src: "./assets/best-mix-shoulders-core-v1.png", rows: 3, layout: "wide" },
+    "shoulders-core": { src: "./assets/best-mix-shoulders-core-v2.png", rows: 3, layout: "wide" },
     "arms-chest-accessory": { src: "./assets/best-mix-arms-chest-v1.png", rows: 3, layout: "wide" },
   },
   machine: {
-    "legs-full": { src: "./assets/equipment-machine-legs-v1.png", rows: 3, layout: "wide" },
+    "legs-full": { src: "./assets/equipment-machine-legs-v2.png", rows: 3, layout: "wide" },
     "chest-triceps": { src: "./assets/equipment-machine-chest-v1.png", rows: 3, layout: "wide" },
     back: { src: "./assets/equipment-machine-back-v1.png", columns: 4, rows: 3, cells: [0, 2, 4, 6, 8, 10], layout: "wide" },
+    "machine-back-extension": { src: "./assets/equipment-machine-back-extension-v1.png", columns: 1, rows: 1, fit: "contain" },
     "shoulders-core": { src: "./assets/equipment-machine-shoulders-core-v1.png", rows: 4, layout: "wide" },
     "arms-chest-accessory": { src: "./assets/equipment-machine-arms-chest-v1.png", rows: 3, layout: "wide" },
   },
@@ -310,7 +311,7 @@ const equipmentVariants = {
     barbell: { name: "Barbell front squat", reps: "8–10", rest: "2 min" },
   },
   "leg-curl": {
-    machine: { name: "Seated leg-curl machine" },
+    machine: { name: "Lying leg-curl machine", visualProfile: "best", visualIndex: 4 },
     dumbbell: { name: "Lying dumbbell leg curl" },
     barbell: { skip: true },
   },
@@ -355,7 +356,7 @@ const equipmentVariants = {
     barbell: { name: "Barbell pullover", reps: "10–12", target: "Lats", secondary: "Teres major, triceps" },
   },
   "back-extension": {
-    machine: { name: "Seated back-extension machine" },
+    machine: { name: "Seated back-extension machine", visualWorkoutId: "machine-back-extension", visualIndex: 0 },
     dumbbell: { name: "Dumbbell-loaded 45-degree back extension" },
     barbell: { name: "Barbell good morning", reps: "8–12", rest: "2 min" },
   },
@@ -365,7 +366,7 @@ const equipmentVariants = {
     barbell: { skip: true },
   },
   "reverse-fly": {
-    machine: { name: "Reverse pec-deck machine" },
+    machine: { name: "Reverse pec-deck machine", visualWorkoutId: "shoulders-core", visualIndex: 2 },
     dumbbell: { name: "Chest-supported dumbbell reverse fly" },
     barbell: { name: "Wide-elbow barbell rear-delt row", reps: "10–12", rest: "75 sec" },
   },
@@ -460,7 +461,7 @@ const equipmentVariants = {
     barbell: { name: "Bent-over barbell row", visualIndex: 0 },
   },
   "hyperextension-machine": {
-    machine: { name: "Seated back-extension machine", visualIndex: 2 },
+    machine: { name: "Seated back-extension machine", visualWorkoutId: "machine-back-extension", visualIndex: 0 },
     dumbbell: { name: "Dumbbell-loaded 45-degree back extension", visualIndex: 2 },
     barbell: { name: "Barbell good morning", visualIndex: 2 },
   },
@@ -663,7 +664,9 @@ const elements = {
   startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
   editDialog: $("#editDialog"), editForm: $("#editForm"), editDayLabel: $("#editDayLabel"), editTitle: $("#editTitle"),
   editFocus: $("#editFocus"), exerciseEditor: $("#exerciseEditor"), editorTemplate: $("#exerciseEditorRow"),
-  addExercise: $("#addExercise"), saveStatus: $("#saveStatus"),
+  addExercise: $("#addExercise"), saveStatus: $("#saveStatus"), visualDialog: $("#visualDialog"),
+  expandedVisual: $("#expandedVisual"), visualDialogTitle: $("#visualDialogTitle"), visualDialogProfile: $("#visualDialogProfile"),
+  closeVisualDialog: $("#closeVisualDialog"),
 };
 const dayCheckboxes = Array.from(document.querySelectorAll(".day-picker input[type='checkbox']"));
 
@@ -690,7 +693,7 @@ function resolveExerciseVariant(exercise, slotIndex, profileId = state.equipment
     ...(variant || {}),
     baseName: exercise.name,
     profileId,
-    visualProfile,
+    visualProfile: variant?.visualProfile ?? visualProfile,
     visualIndex: variant?.visualIndex ?? exercise.visualIndex ?? slotIndex,
   };
   if (profileId === "beginner") resolved.sets = slotIndex === 0 ? "3" : "2–3";
@@ -755,8 +758,11 @@ function createMuscleMap(exercise) {
 function createMovementVisual(workout, exercise, index, profileId = exercise.visualProfile, className = "movement-visual") {
   const atlas = exerciseAtlases[profileId]?.[exercise.visualWorkoutId || workout.workoutId];
   const visual = makeElement("div", className);
-  visual.setAttribute("role", "img");
-  visual.setAttribute("aria-label", `${exercise.name} visual reference`);
+  visual.setAttribute("role", "button");
+  visual.setAttribute("tabindex", "0");
+  visual.setAttribute("aria-label", `Expand visual reference for ${exercise.name}`);
+  visual.dataset.exerciseName = exercise.name;
+  visual.dataset.profileLabel = exercise.profileLabel || equipmentProfiles[exercise.profileId]?.label || equipmentProfiles[profileId]?.label || "Exercise";
   if (atlas) {
     if (className === "movement-visual" && atlas.rows === 4) visual.classList.add("is-landscape");
     if (className === "movement-visual" && atlas.layout === "wide") visual.classList.add("is-wide");
@@ -767,11 +773,41 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
     const horizontalPosition = columns === 1 ? 0 : (column / (columns - 1)) * 100;
     const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
     visual.style.backgroundImage = `url("${atlas.src}")`;
-    visual.style.backgroundSize = `${columns * 100}% ${atlas.rows * 100}%`;
-    visual.style.backgroundPosition = `${horizontalPosition}% ${verticalPosition}%`;
+    visual.style.backgroundSize = atlas.fit === "contain" ? "contain" : `${columns * 100}% ${atlas.rows * 100}%`;
+    visual.style.backgroundPosition = atlas.fit === "contain" ? "center" : `${horizontalPosition}% ${verticalPosition}%`;
+    visual.dataset.atlasSrc = atlas.src;
+    visual.dataset.atlasColumns = String(columns);
+    visual.dataset.atlasRows = String(atlas.rows);
   }
   if (className === "movement-visual") visual.append(makeElement("span", "visual-label", "Movement"));
+  const expandHint = makeElement("span", "expand-visual-hint", "↗");
+  expandHint.setAttribute("aria-hidden", "true");
+  visual.append(expandHint);
   return visual;
+}
+
+function openVisualDialog(visual) {
+  if (!visual?.style.backgroundImage || visual.style.backgroundImage === "none") return;
+  elements.visualDialogTitle.textContent = visual.dataset.exerciseName || "Exercise visual";
+  elements.visualDialogProfile.textContent = `${visual.dataset.profileLabel || "Exercise"} reference`;
+  elements.expandedVisual.setAttribute("aria-label", `${visual.dataset.exerciseName || "Exercise"} expanded visual reference`);
+  elements.expandedVisual.style.backgroundImage = visual.style.backgroundImage;
+  elements.expandedVisual.style.backgroundSize = visual.style.backgroundSize;
+  elements.expandedVisual.style.backgroundPosition = visual.style.backgroundPosition;
+  elements.expandedVisual.style.aspectRatio = "3 / 2";
+  const atlasSrc = visual.dataset.atlasSrc;
+  if (atlasSrc) {
+    const image = new Image();
+    image.addEventListener("load", () => {
+      if (elements.expandedVisual.style.backgroundImage !== visual.style.backgroundImage) return;
+      const columns = Number(visual.dataset.atlasColumns) || 2;
+      const rows = Number(visual.dataset.atlasRows) || 1;
+      const cellAspect = (image.naturalWidth / columns) / (image.naturalHeight / rows);
+      if (Number.isFinite(cellAspect) && cellAspect > 0) elements.expandedVisual.style.aspectRatio = String(cellAspect);
+    }, { once: true });
+    image.src = atlasSrc;
+  }
+  elements.visualDialog.showModal();
 }
 function getAlternativeChoices(exercise) {
   const variants = equipmentVariants[exercise.id]; if (!variants) return [];
@@ -785,7 +821,7 @@ function getAlternativeChoices(exercise) {
       name: variant.name,
       profileId,
       label: equipmentProfiles[profileId].label,
-      visualProfile: equipmentProfiles[profileId].visualProfile,
+      visualProfile: variant.visualProfile || equipmentProfiles[profileId].visualProfile,
       visualIndex: variant.visualIndex ?? exercise.alternativeVisualIndex ?? exercise.visualIndex,
       visualWorkoutId: variant.visualWorkoutId ?? exercise.alternativeWorkoutId,
     }];
@@ -825,7 +861,7 @@ function createExerciseCard(workout, exercise, index) {
     const list = makeElement("ul", "alternative-options");
     alternatives.forEach((alternative) => {
       const item = makeElement("li", "alternative-option");
-      const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId };
+      const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId, profileLabel: alternative.label };
       const visual = createMovementVisual(workout, altExercise, alternative.visualIndex ?? exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
       const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name));
       item.append(visual, text); list.append(item);
@@ -883,12 +919,20 @@ function openSettingsDialog() {
 elements.dayTabs.addEventListener("click", (event) => { const tab = event.target.closest(".day-tab"); if (!tab) return; selectedDayId = tab.dataset.dayId; renderTabs(); renderWorkout(); });
 elements.exerciseList.addEventListener("change", (event) => { const checkbox = event.target.closest("input[type='checkbox']"); if (!checkbox) return; weekCompletion()[checkbox.dataset.completionKey] = checkbox.checked; saveState(); renderWorkout(); renderProgress(); });
 elements.exerciseList.addEventListener("click", (event) => {
+  const visual = event.target.closest(".movement-visual, .alternative-visual");
+  if (visual) { openVisualDialog(visual); return; }
   const button = event.target.closest(".alternatives-button"); if (!button) return;
   const panel = document.getElementById(button.dataset.alternativesTarget); if (!panel) return;
   const willOpen = button.getAttribute("aria-expanded") !== "true";
   button.setAttribute("aria-expanded", String(willOpen)); panel.hidden = !willOpen;
   button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : button.dataset.closedLabel;
 });
+elements.exerciseList.addEventListener("keydown", (event) => {
+  const visual = event.target.closest(".movement-visual, .alternative-visual");
+  if (!visual || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault(); openVisualDialog(visual);
+});
+elements.closeVisualDialog.addEventListener("click", () => elements.visualDialog.close());
 elements.editWorkout.addEventListener("click", openEditDialog); elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
 elements.equipmentProfile.addEventListener("change", () => {
   const profileId = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
@@ -927,7 +971,7 @@ elements.editForm.addEventListener("submit", (event) => {
   });
   saveState(); elements.editDialog.close(); renderAll();
 });
-[elements.settingsDialog, elements.editDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
+[elements.settingsDialog, elements.editDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=10"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=11"));
 renderAll();
