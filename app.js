@@ -15,6 +15,9 @@ const exerciseAtlases = {
     "chest-triceps": { src: "./assets/equipment-machine-chest-v1.png", rows: 3, layout: "wide" },
     back: { src: "./assets/equipment-machine-back-v1.png", columns: 4, rows: 3, cells: [0, 2, 4, 6, 8, 10], layout: "wide" },
     "machine-back-extension": { src: "./assets/equipment-machine-back-extension-v1.png", columns: 1, rows: 1, fit: "contain" },
+    "machine-lateral-raise": { src: "./assets/equipment-machine-lateral-raise-v1.png", columns: 1, rows: 1, layout: "wide" },
+    "machine-rear-delt-fly": { src: "./assets/equipment-machine-reverse-pec-deck-v1.png", columns: 1, rows: 1, layout: "wide" },
+    "machine-face-pull": { src: "./assets/equipment-machine-face-pull-v1.png", columns: 1, rows: 1, layout: "wide" },
     "shoulders-core": { src: "./assets/equipment-machine-shoulders-core-v1.png", rows: 4, layout: "wide" },
     "arms-chest-accessory": { src: "./assets/equipment-machine-arms-chest-v1.png", rows: 3, layout: "wide" },
   },
@@ -366,7 +369,7 @@ const equipmentVariants = {
     barbell: { skip: true },
   },
   "reverse-fly": {
-    machine: { name: "Reverse pec-deck machine", visualWorkoutId: "shoulders-core", visualIndex: 2 },
+    machine: { name: "Reverse pec-deck machine", visualWorkoutId: "machine-rear-delt-fly", visualIndex: 0 },
     dumbbell: { name: "Chest-supported dumbbell reverse fly" },
     barbell: { name: "Wide-elbow barbell rear-delt row", reps: "10–12", rest: "75 sec" },
   },
@@ -381,17 +384,17 @@ const equipmentVariants = {
     barbell: { name: "Standing barbell overhead press" },
   },
   "cable-lateral-raise": {
-    machine: { name: "Lateral-raise machine" },
-    dumbbell: { name: "Standing dumbbell lateral raise" },
-    barbell: { name: "Wide-grip barbell upright row", reps: "10–12", secondary: "Upper traps" },
+    machine: { name: "Lateral-raise machine", visualWorkoutId: "machine-lateral-raise", visualIndex: 0 },
+    dumbbell: { name: "Standing dumbbell lateral raise", visualIndex: 1 },
+    barbell: { name: "Wide-grip barbell upright row", visualIndex: 1, reps: "10–12", secondary: "Upper traps" },
   },
   "rear-delt-fly": {
-    machine: { name: "Reverse pec-deck rear-delt fly" },
-    dumbbell: { name: "Chest-supported dumbbell rear-delt fly" },
-    barbell: { name: "Wide-elbow barbell rear-delt row", reps: "10–12" },
+    machine: { name: "Reverse pec-deck rear-delt fly", visualWorkoutId: "machine-rear-delt-fly", visualIndex: 0 },
+    dumbbell: { name: "Chest-supported dumbbell rear-delt fly", visualIndex: 2 },
+    barbell: { name: "Wide-elbow barbell rear-delt row", visualIndex: 2, reps: "10–12" },
   },
   "face-pull": {
-    machine: { name: "Cable face pull" },
+    machine: { name: "Cable face pull", visualWorkoutId: "machine-face-pull", visualIndex: 0 },
     dumbbell: { skip: true },
     barbell: { skip: true },
   },
@@ -973,5 +976,5 @@ elements.editForm.addEventListener("submit", (event) => {
 });
 [elements.settingsDialog, elements.editDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=11"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=12"));
 renderAll();
