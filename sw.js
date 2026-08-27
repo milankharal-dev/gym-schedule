@@ -1,7 +1,7 @@
-const CACHE_NAME = "training-week-v14";
+const CACHE_NAME = "training-week-v15";
 const APP_ASSETS = [
-  "./", "./index.html", "./styles.css?v=14", "./app.js?v=14",
-  "./library.html", "./library.css?v=2", "./library.js?v=2",
+  "./", "./index.html", "./styles.css?v=15", "./app.js?v=15",
+  "./library.html", "./library.css?v=2", "./library.js?v=3",
   "./manifest.webmanifest", "./icon.svg", "./assets/muscle-anatomy.png",
 ];
 

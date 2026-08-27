@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=14" />
+    <link rel="stylesheet" href="./styles.css?v=15" />
   </head>
   <body>
     <div class="app-shell">
@@ -169,7 +169,7 @@
     </dialog>
 
     <dialog class="train-dialog" id="trainDialog" aria-labelledby="trainExerciseName">
-      <div class="train-shell">
+      <div class="train-shell" id="trainShell">
         <header class="train-header">
           <div>
             <p class="train-kicker" id="trainDayLabel">Train mode</p>
@@ -186,6 +186,12 @@
           <h2 id="trainExerciseName">Exercise</h2>
           <p class="train-target" id="trainTarget"></p>
 
+          <label class="train-option-picker" id="trainOptionField" hidden>
+            <span>Exercise option</span>
+            <select id="trainExerciseOption" aria-label="Choose an exercise alternative"></select>
+            <small>Choose one replacement for this training slot.</small>
+          </label>
+
           <div class="train-prescription">
             <div><span>Sets</span><strong id="trainSets">—</strong></div>
             <div><span>Reps</span><strong id="trainReps">—</strong></div>
@@ -194,7 +200,10 @@
           <div class="train-tempo"><span>Tempo</span><strong id="trainTempo">Controlled</strong></div>
 
           <div class="train-actions">
-            <button class="train-done" id="trainDoneButton" type="button">Done · Next exercise</button>
+            <div class="train-navigation">
+              <button class="train-previous" id="trainPreviousButton" type="button">← Previous</button>
+              <button class="train-done" id="trainDoneButton" type="button">Done · Next exercise</button>
+            </div>
             <button class="train-exit" id="trainExitButton" type="button">Exit train mode</button>
           </div>
         </section>
@@ -204,7 +213,10 @@
           <p class="train-kicker">Workout complete</p>
           <h2>Strong finish.</h2>
           <p id="trainCompleteText">Every exercise in this workout is marked done.</p>
-          <button class="train-done" id="trainCompleteExit" type="button">Return to schedule</button>
+          <div class="train-complete-actions">
+            <button class="train-previous" id="trainReviewLast" type="button">← Review last exercise</button>
+            <button class="train-done" id="trainCompleteExit" type="button">Return to schedule</button>
+          </div>
         </section>
       </div>
     </dialog>
@@ -219,6 +231,6 @@
       <p class="visual-dialog-note">Use this as a movement reference. Follow the written tempo and use a comfortable, controlled range.</p>
     </dialog>
 
-    <script src="./app.js?v=14" defer></script>
+    <script src="./app.js?v=15" defer></script>
   </body>
 </html>

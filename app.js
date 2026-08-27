@@ -619,7 +619,7 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultState = () => ({
   profileName: "", equipmentProfile: "best", startDayId: "monday",
   trainingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
-  programVersion: PROGRAM_VERSION, workouts: clone(programWorkouts), bestMixWorkouts: clone(bestMixProgramWorkouts), completions: {},
+  programVersion: PROGRAM_VERSION, workouts: clone(programWorkouts), bestMixWorkouts: clone(bestMixProgramWorkouts), completions: {}, trainChoices: {},
 });
 
 function loadState() {
@@ -647,6 +647,7 @@ function loadState() {
         return saved ? { ...clone(template), ...saved } : clone(template);
       }) : clone(bestMixProgramWorkouts),
       completions: stored.completions && typeof stored.completions === "object" ? stored.completions : {},
+      trainChoices: stored.trainChoices && typeof stored.trainChoices === "object" ? stored.trainChoices : {},
     };
   } catch { return defaultState(); }
 }
@@ -655,6 +656,8 @@ let state = loadState();
 let selectedDayId = getDayId(new Date());
 let trainWorkout = null;
 let trainExerciseIndex = 0;
+let trainScrollPosition = 0;
+let trainScrollLocked = false;
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
@@ -672,10 +675,13 @@ const elements = {
   expandedVisual: $("#expandedVisual"), visualDialogTitle: $("#visualDialogTitle"), visualDialogProfile: $("#visualDialogProfile"),
   closeVisualDialog: $("#closeVisualDialog"),
   trainDialog: $("#trainDialog"), exitTrainMode: $("#exitTrainMode"), trainExitButton: $("#trainExitButton"),
+  trainShell: $("#trainShell"),
   trainDayLabel: $("#trainDayLabel"), trainProgressText: $("#trainProgressText"), trainProgressBar: $("#trainProgressBar"),
   trainExerciseView: $("#trainExerciseView"), trainVisualHost: $("#trainVisualHost"), trainEquipment: $("#trainEquipment"),
   trainExerciseName: $("#trainExerciseName"), trainTarget: $("#trainTarget"), trainSets: $("#trainSets"),
   trainReps: $("#trainReps"), trainRest: $("#trainRest"), trainTempo: $("#trainTempo"),
+  trainOptionField: $("#trainOptionField"), trainExerciseOption: $("#trainExerciseOption"),
+  trainPreviousButton: $("#trainPreviousButton"), trainReviewLast: $("#trainReviewLast"),
   trainDoneButton: $("#trainDoneButton"), trainCompleteState: $("#trainCompleteState"),
   trainCompleteText: $("#trainCompleteText"), trainCompleteExit: $("#trainCompleteExit"),
 };
@@ -899,6 +905,54 @@ function incompleteExerciseIndex(workout, afterIndex = -1) {
   return workout.exercises.length;
 }
 
+function trainChoiceStorageKey(workout, exercise) {
+  return `${state.equipmentProfile}:${workout.workoutId}:${exercise.id}`;
+}
+
+function getTrainExerciseOptions(exercise, index) {
+  const programmedLabel = exercise.profileLabel || equipmentProfiles[exercise.profileId]?.label || equipmentProfiles[state.equipmentProfile].label;
+  const programmed = {
+    key: "programmed",
+    name: exercise.name,
+    label: programmedLabel,
+    profileId: exercise.profileId,
+    visualProfile: exercise.visualProfile,
+    visualIndex: exercise.visualIndex ?? index,
+    visualWorkoutId: exercise.visualWorkoutId,
+  };
+  return [programmed, ...getAlternativeChoices(exercise).map((alternative) => ({
+    ...alternative,
+    key: `${alternative.profileId}:${alternative.name}`,
+  }))];
+}
+
+function getFocusedTrainExercise(workout, exercise, index) {
+  const options = getTrainExerciseOptions(exercise, index);
+  const storageKey = trainChoiceStorageKey(workout, exercise);
+  const selectedKey = options.some((option) => option.key === state.trainChoices[storageKey])
+    ? state.trainChoices[storageKey] : "programmed";
+  const selected = options.find((option) => option.key === selectedKey) || options[0];
+
+  elements.trainOptionField.hidden = options.length < 2;
+  elements.trainExerciseOption.replaceChildren(...options.map((option) => {
+    const item = document.createElement("option");
+    item.value = option.key;
+    item.textContent = `${option.name} · ${option.label}`;
+    item.selected = option.key === selected.key;
+    return item;
+  }));
+
+  return {
+    ...exercise,
+    name: selected.name,
+    profileId: selected.profileId,
+    profileLabel: selected.label,
+    visualProfile: selected.visualProfile,
+    visualIndex: selected.visualIndex,
+    visualWorkoutId: selected.visualWorkoutId,
+  };
+}
+
 function renderTrainMode() {
   if (!trainWorkout) return;
   const total = trainWorkout.exercises.length;
@@ -919,17 +973,18 @@ function renderTrainMode() {
   }
 
   const exercise = trainWorkout.exercises[trainExerciseIndex];
+  const focusedExercise = getFocusedTrainExercise(trainWorkout, exercise, trainExerciseIndex);
   const visual = createMovementVisual(
     trainWorkout,
-    exercise,
-    exercise.visualIndex ?? trainExerciseIndex,
-    exercise.visualProfile,
+    focusedExercise,
+    focusedExercise.visualIndex ?? trainExerciseIndex,
+    focusedExercise.visualProfile,
     "train-movement-visual",
   );
   fitVisualToAtlas(visual);
   elements.trainVisualHost.replaceChildren(visual);
-  elements.trainEquipment.textContent = exercise.profileLabel || equipmentProfiles[exercise.profileId]?.label || equipmentProfiles[state.equipmentProfile].label;
-  elements.trainExerciseName.textContent = exercise.name;
+  elements.trainEquipment.textContent = focusedExercise.profileLabel;
+  elements.trainExerciseName.textContent = focusedExercise.name;
   elements.trainTarget.textContent = [exercise.target, exercise.secondary].filter(Boolean).join(" · ");
   elements.trainSets.textContent = exercise.sets || "—";
   elements.trainReps.textContent = exercise.reps || "—";
@@ -938,7 +993,31 @@ function renderTrainMode() {
   const remainingAfterThis = trainWorkout.exercises.filter((item, index) => (
     index !== trainExerciseIndex && !completion[completionKey(trainWorkout, item)]
   )).length;
-  elements.trainDoneButton.textContent = remainingAfterThis ? "Done · Next exercise" : "Done · Finish workout";
+  elements.trainPreviousButton.disabled = trainExerciseIndex === 0;
+  elements.trainDoneButton.textContent = trainExerciseIndex < total - 1 || remainingAfterThis
+    ? "Done · Next exercise" : "Done · Finish workout";
+}
+
+function lockTrainModeScroll() {
+  if (trainScrollLocked) return;
+  trainScrollPosition = window.scrollY;
+  trainScrollLocked = true;
+  document.documentElement.classList.add("train-mode-open");
+  document.body.classList.add("train-mode-open");
+  document.body.style.top = `-${trainScrollPosition}px`;
+}
+
+function unlockTrainModeScroll() {
+  if (!trainScrollLocked) return;
+  trainScrollLocked = false;
+  document.documentElement.classList.remove("train-mode-open");
+  document.body.classList.remove("train-mode-open");
+  document.body.style.top = "";
+  window.scrollTo(0, trainScrollPosition);
+}
+
+function scrollTrainModeToTop() {
+  elements.trainShell.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function openTrainMode() {
@@ -947,14 +1026,22 @@ function openTrainMode() {
   trainWorkout = workout;
   trainExerciseIndex = incompleteExerciseIndex(trainWorkout);
   renderTrainMode();
-  document.body.classList.add("train-mode-open");
+  lockTrainModeScroll();
   elements.trainDialog.showModal();
 }
 
 function closeTrainMode() {
   if (elements.trainDialog.open) elements.trainDialog.close();
-  document.body.classList.remove("train-mode-open");
+  unlockTrainModeScroll();
   trainWorkout = null;
+}
+
+function showPreviousTrainExercise() {
+  if (!trainWorkout || !trainWorkout.exercises.length) return;
+  trainExerciseIndex = trainExerciseIndex >= trainWorkout.exercises.length
+    ? trainWorkout.exercises.length - 1 : Math.max(0, trainExerciseIndex - 1);
+  renderTrainMode();
+  scrollTrainModeToTop();
 }
 
 function completeCurrentTrainExercise() {
@@ -962,10 +1049,15 @@ function completeCurrentTrainExercise() {
   const exercise = trainWorkout.exercises[trainExerciseIndex];
   weekCompletion()[completionKey(trainWorkout, exercise)] = true;
   saveState();
-  trainExerciseIndex = incompleteExerciseIndex(trainWorkout, trainExerciseIndex);
+  if (trainExerciseIndex < trainWorkout.exercises.length - 1) {
+    trainExerciseIndex += 1;
+  } else {
+    trainExerciseIndex = incompleteExerciseIndex(trainWorkout);
+  }
   renderWorkout();
   renderProgress();
   renderTrainMode();
+  scrollTrainModeToTop();
 }
 
 function renderWorkout() {
@@ -1017,6 +1109,17 @@ elements.exerciseList.addEventListener("keydown", (event) => {
 });
 elements.startTrainMode.addEventListener("click", openTrainMode);
 elements.trainDoneButton.addEventListener("click", completeCurrentTrainExercise);
+elements.trainPreviousButton.addEventListener("click", showPreviousTrainExercise);
+elements.trainReviewLast.addEventListener("click", showPreviousTrainExercise);
+elements.trainExerciseOption.addEventListener("change", () => {
+  if (!trainWorkout || trainExerciseIndex >= trainWorkout.exercises.length) return;
+  const exercise = trainWorkout.exercises[trainExerciseIndex];
+  const storageKey = trainChoiceStorageKey(trainWorkout, exercise);
+  if (elements.trainExerciseOption.value === "programmed") delete state.trainChoices[storageKey];
+  else state.trainChoices[storageKey] = elements.trainExerciseOption.value;
+  saveState();
+  renderTrainMode();
+});
 [elements.exitTrainMode, elements.trainExitButton, elements.trainCompleteExit].forEach((button) => {
   button.addEventListener("click", closeTrainMode);
 });
@@ -1029,7 +1132,7 @@ elements.trainVisualHost.addEventListener("keydown", (event) => {
   if (!visual || (event.key !== "Enter" && event.key !== " ")) return;
   event.preventDefault(); openVisualDialog(visual);
 });
-elements.trainDialog.addEventListener("close", () => { document.body.classList.remove("train-mode-open"); trainWorkout = null; });
+elements.trainDialog.addEventListener("close", () => { unlockTrainModeScroll(); trainWorkout = null; });
 elements.trainDialog.addEventListener("click", (event) => { if (event.target === elements.trainDialog) closeTrainMode(); });
 elements.closeVisualDialog.addEventListener("click", () => elements.visualDialog.close());
 elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
@@ -1054,5 +1157,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=14"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=15"));
 renderAll();
