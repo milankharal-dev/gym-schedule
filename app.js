@@ -1,12 +1,56 @@
-const STORAGE_KEY = "gym-schedule-v4";
-const LEGACY_STORAGE_KEY = "gym-schedule-v3";
+const STORAGE_KEY = "gym-schedule-v5";
+const LEGACY_STORAGE_KEYS = ["gym-schedule-v4", "gym-schedule-v3"];
 const MUSCLE_IMAGE = "./assets/muscle-anatomy.png";
 const exerciseAtlases = {
-  "legs-full": { src: "./assets/exercises-legs.png", rows: 3 },
-  "chest-triceps": { src: "./assets/exercises-chest-triceps.png", rows: 3 },
-  back: { src: "./assets/exercises-back-v2.png", rows: 3, layout: "wide" },
-  "shoulders-core": { src: "./assets/exercises-shoulders-core.png", rows: 4 },
-  "arms-chest-accessory": { src: "./assets/exercises-arms-chest-v2.png", rows: 3, layout: "wide" },
+  best: {
+    "legs-full": { src: "./assets/exercises-legs.png", rows: 3 },
+    "chest-triceps": { src: "./assets/exercises-chest-triceps.png", rows: 3 },
+    back: { src: "./assets/exercises-back-v2.png", rows: 3, layout: "wide" },
+    "shoulders-core": { src: "./assets/exercises-shoulders-core.png", rows: 4 },
+    "arms-chest-accessory": { src: "./assets/exercises-arms-chest-v2.png", rows: 3, layout: "wide" },
+  },
+  machine: {
+    "legs-full": { src: "./assets/equipment-machine-legs-v1.png", rows: 3, layout: "wide" },
+    "chest-triceps": { src: "./assets/equipment-machine-chest-v1.png", rows: 3, layout: "wide" },
+    back: { src: "./assets/equipment-machine-back-v1.png", columns: 4, rows: 3, cells: [0, 2, 4, 6, 8, 10], layout: "wide" },
+    "shoulders-core": { src: "./assets/equipment-machine-shoulders-core-v1.png", rows: 4, layout: "wide" },
+    "arms-chest-accessory": { src: "./assets/equipment-machine-arms-chest-v1.png", rows: 3, layout: "wide" },
+  },
+  dumbbell: {
+    "legs-full": { src: "./assets/equipment-dumbbell-legs-v1.png", rows: 3, layout: "wide" },
+    "chest-triceps": { src: "./assets/equipment-dumbbell-chest-v1.png", rows: 3, layout: "wide" },
+    back: { src: "./assets/equipment-dumbbell-back-v1.png", rows: 3, cells: [1, 0, 2, 3, 4, 5], layout: "wide" },
+    "shoulders-core": { src: "./assets/equipment-dumbbell-shoulders-core-v1.png", rows: 4, layout: "wide" },
+    "arms-chest-accessory": { src: "./assets/equipment-dumbbell-arms-chest-v1.png", rows: 3, layout: "wide" },
+  },
+  barbell: {
+    "legs-full": { src: "./assets/equipment-barbell-legs-v1.png", rows: 3, layout: "wide" },
+    "chest-triceps": { src: "./assets/equipment-barbell-chest-v1.png", rows: 3, layout: "wide" },
+    back: { src: "./assets/equipment-barbell-back-v1.png", rows: 3, cells: [1, 0, 2, 3, 4, 5], layout: "wide" },
+    "shoulders-core": { src: "./assets/equipment-barbell-shoulders-core-v1.png", rows: 4, layout: "wide" },
+    "arms-chest-accessory": { src: "./assets/equipment-barbell-arms-chest-v1.png", rows: 3, layout: "wide" },
+  },
+};
+
+const equipmentProfiles = {
+  beginner: { label: "Beginner", short: "Beginner · easy machines", visualProfile: "machine" },
+  machine: { label: "Machines", short: "Machines only", visualProfile: "machine" },
+  dumbbell: { label: "Dumbbells", short: "Dumbbells only", visualProfile: "dumbbell" },
+  barbell: { label: "Barbells", short: "Barbells only", visualProfile: "barbell" },
+  best: { label: "Best mix", short: "Best equipment mix", visualProfile: "best" },
+};
+
+const equipmentProfileNotes = {
+  beginner: "Beginner mode uses stable machines and 2–3 working sets. Build consistent form first; add load only after every rep feels controlled.",
+  dumbbell: {
+    back: "Dumbbell-only limitation: dumbbells cannot reproduce a true vertical pull. For maximum lat development, use a pull-up or pulldown when available instead of adding another row.",
+  },
+  barbell: {
+    "legs-full": "Barbell-only limitation: no barbell movement directly reproduces knee-flexion leg curls, so that duplicate hinge slot is omitted. Use a leg-curl machine when direct hamstring work is available.",
+    "chest-triceps": "Barbell-only limitation: the fly slot is omitted because another barbell press would duplicate pressing volume. A pec deck or cable fly is the better complement when available.",
+    back: "Barbell-only limitation: there is no true barbell vertical pull, so the plan uses a heavy row plus pullover. A pull-up or pulldown remains the better addition for back width when available.",
+    "shoulders-core": "Barbell-only limitation: face pulls are omitted to avoid duplicating rear-delt rows. Machines or dumbbells are usually easier for precise side- and rear-delt isolation.",
+  },
 };
 
 const dayDefinitions = [
@@ -134,6 +178,159 @@ const programWorkouts = [
     ],
   },
 ];
+
+const equipmentVariants = {
+  "back-squat": {
+    machine: { name: "Hack squat machine" },
+    dumbbell: { name: "Goblet dumbbell squat", reps: "8–12" },
+    barbell: { name: "Barbell back squat" },
+  },
+  "romanian-deadlift": {
+    machine: { name: "Smith-machine Romanian deadlift" },
+    dumbbell: { name: "Dumbbell Romanian deadlift" },
+    barbell: { name: "Barbell Romanian deadlift" },
+  },
+  "bulgarian-split-squat": {
+    machine: { name: "Single-leg press machine", reps: "10–12 / side" },
+    dumbbell: { name: "Dumbbell reverse lunge" },
+    barbell: { name: "Barbell reverse lunge" },
+  },
+  "leg-press": {
+    machine: { name: "Seated leg press machine" },
+    dumbbell: { name: "Dumbbell step-up", reps: "10–12 / side" },
+    barbell: { name: "Barbell front squat", reps: "8–10", rest: "2 min" },
+  },
+  "leg-curl": {
+    machine: { name: "Seated leg-curl machine" },
+    dumbbell: { name: "Lying dumbbell leg curl" },
+    barbell: { skip: true },
+  },
+  "calf-raise": {
+    machine: { name: "Standing calf-raise machine" },
+    dumbbell: { name: "Standing dumbbell calf raise" },
+    barbell: { name: "Standing barbell calf raise" },
+  },
+  "bench-press": {
+    machine: { name: "Seated chest-press machine" },
+    dumbbell: { name: "Flat dumbbell bench press" },
+    barbell: { name: "Flat barbell bench press" },
+  },
+  "incline-db-press": {
+    machine: { name: "Incline chest-press machine" },
+    dumbbell: { name: "Incline dumbbell press" },
+    barbell: { name: "Incline barbell bench press" },
+  },
+  "cable-fly": {
+    machine: { name: "Pec-deck fly machine" },
+    dumbbell: { name: "Flat dumbbell chest fly" },
+    barbell: { skip: true },
+  },
+  "overhead-triceps": {
+    machine: { name: "Seated triceps-extension machine" },
+    dumbbell: { name: "Seated dumbbell overhead extension" },
+    barbell: { name: "EZ-bar skull crusher" },
+  },
+  "rope-pushdown": {
+    machine: { name: "Seated triceps-dip machine", reps: "10–12", rest: "75 sec" },
+    dumbbell: { name: "Lying dumbbell triceps extension", reps: "10–12" },
+    barbell: { name: "Close-grip barbell bench press", reps: "8–10", rest: "90 sec", secondary: "Chest, front delts" },
+  },
+  "pull-up-pulldown": {
+    machine: { name: "Plate-loaded lat-pulldown machine" },
+    dumbbell: { name: "Bench-supported one-arm dumbbell row", reps: "8–10 / side", target: "Lats", secondary: "Upper back, biceps" },
+    barbell: { name: "Bent-over barbell row", reps: "6–8", target: "Upper back", secondary: "Lats, biceps" },
+  },
+  "bench-supported-row": {
+    machine: { name: "Chest-supported row machine" },
+    dumbbell: { name: "Dumbbell pullover", reps: "10–12", target: "Lats", secondary: "Teres major, triceps" },
+    barbell: { name: "Barbell pullover", reps: "10–12", target: "Lats", secondary: "Teres major, triceps" },
+  },
+  "back-extension": {
+    machine: { name: "Seated back-extension machine" },
+    dumbbell: { name: "Dumbbell-loaded 45-degree back extension" },
+    barbell: { name: "Barbell good morning", reps: "8–12", rest: "2 min" },
+  },
+  "straight-arm-pulldown": {
+    machine: { name: "Pullover machine" },
+    dumbbell: { skip: true },
+    barbell: { skip: true },
+  },
+  "reverse-fly": {
+    machine: { name: "Reverse pec-deck machine" },
+    dumbbell: { name: "Chest-supported dumbbell reverse fly" },
+    barbell: { name: "Wide-elbow barbell rear-delt row", reps: "10–12", rest: "75 sec" },
+  },
+  "dumbbell-shrug": {
+    machine: { name: "Plate-loaded shrug machine" },
+    dumbbell: { name: "Standing dumbbell shrug" },
+    barbell: { name: "Standing barbell shrug" },
+  },
+  "db-shoulder-press": {
+    machine: { name: "Seated shoulder-press machine" },
+    dumbbell: { name: "Seated dumbbell shoulder press" },
+    barbell: { name: "Standing barbell overhead press" },
+  },
+  "cable-lateral-raise": {
+    machine: { name: "Lateral-raise machine" },
+    dumbbell: { name: "Standing dumbbell lateral raise" },
+    barbell: { name: "Wide-grip barbell upright row", reps: "10–12", secondary: "Upper traps" },
+  },
+  "rear-delt-fly": {
+    machine: { name: "Reverse pec-deck rear-delt fly" },
+    dumbbell: { name: "Chest-supported dumbbell rear-delt fly" },
+    barbell: { name: "Wide-elbow barbell rear-delt row", reps: "10–12" },
+  },
+  "face-pull": {
+    machine: { name: "Cable face pull" },
+    dumbbell: { skip: true },
+    barbell: { skip: true },
+  },
+  "dead-bug": {
+    machine: { name: "Ab-crunch machine", reps: "10–15", target: "Abs", secondary: "Deep core" },
+    dumbbell: { name: "Dumbbell dead-bug pullover", target: "Deep core", secondary: "Lats, hip flexors" },
+    barbell: { name: "Kneeling barbell rollout", reps: "8–12", target: "Abs", secondary: "Lats, shoulders" },
+  },
+  "pallof-press": {
+    machine: { name: "Rotary-torso machine", reps: "10–12 / side" },
+    dumbbell: { name: "One-arm dumbbell suitcase carry", reps: "30–45 sec / side", rest: "45 sec", secondary: "Grip, deep core" },
+    barbell: { name: "Landmine barbell rotation", reps: "8–12 / side", rest: "60 sec", secondary: "Shoulders, deep core" },
+  },
+  plank: {
+    machine: { name: "Captain’s-chair knee raise", reps: "10–15", target: "Abs", secondary: "Hip flexors" },
+    dumbbell: { name: "Dumbbell-weighted front plank" },
+    barbell: { name: "Front-rack barbell carry", reps: "30–45 sec", rest: "60 sec", secondary: "Upper back, glutes" },
+  },
+  "close-grip-bench": {
+    machine: { name: "Seated triceps-dip machine" },
+    dumbbell: { name: "Neutral-grip dumbbell bench press" },
+    barbell: { name: "Close-grip barbell bench press" },
+  },
+  "low-high-fly": {
+    machine: { name: "Incline chest-press machine", reps: "10–12", rest: "90 sec" },
+    dumbbell: { name: "Low-incline dumbbell chest fly" },
+    barbell: { name: "Incline barbell bench press", reps: "8–10", rest: "90 sec", secondary: "Triceps, front delts" },
+  },
+  "ez-bar-curl": {
+    machine: { name: "Preacher-curl machine" },
+    dumbbell: { name: "Alternating dumbbell curl" },
+    barbell: { name: "Standing EZ-bar curl" },
+  },
+  "incline-curl": {
+    machine: { name: "Bayesian cable curl" },
+    dumbbell: { name: "Incline dumbbell curl" },
+    barbell: { name: "EZ-bar preacher curl" },
+  },
+  "cable-pushdown": {
+    machine: { name: "Cable triceps pushdown" },
+    dumbbell: { name: "Dumbbell triceps kickback" },
+    barbell: { name: "Barbell JM press", reps: "8–10", rest: "90 sec", secondary: "Chest, front delts" },
+  },
+  "overhead-cable-extension": {
+    machine: { name: "Seated triceps-extension machine" },
+    dumbbell: { name: "Seated dumbbell overhead extension" },
+    barbell: { name: "EZ-bar skull crusher" },
+  },
+};
 
 const exerciseAlternatives = {
   "back-squat": {
@@ -267,7 +464,7 @@ const markerPositions = {
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultState = () => ({
-  profileName: "", startDayId: "monday",
+  profileName: "", equipmentProfile: "best", startDayId: "monday",
   trainingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
   workouts: clone(programWorkouts), completions: {},
 });
@@ -275,16 +472,18 @@ const defaultState = () => ({
 function loadState() {
   try {
     const current = localStorage.getItem(STORAGE_KEY);
-    const stored = JSON.parse(current || localStorage.getItem(LEGACY_STORAGE_KEY));
+    const legacy = LEGACY_STORAGE_KEYS.map((key) => localStorage.getItem(key)).find(Boolean);
+    const stored = JSON.parse(current || legacy);
     if (!stored) return defaultState();
     const validDays = Array.isArray(stored.trainingDays)
       ? stored.trainingDays.filter((id) => dayDefinitions.some((day) => day.id === id)).slice(0, 5) : [];
     const trainingDays = validDays.length ? validDays : defaultState().trainingDays;
     return {
       profileName: typeof stored.profileName === "string" ? stored.profileName : "",
+      equipmentProfile: equipmentProfiles[stored.equipmentProfile] ? stored.equipmentProfile : "best",
       startDayId: trainingDays.includes(stored.startDayId) ? stored.startDayId : trainingDays[0],
       trainingDays,
-      workouts: current && Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
+      workouts: Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
         const saved = stored.workouts.find((workout) => workout.id === template.id);
         return saved ? { ...clone(template), ...saved } : clone(template);
       }) : clone(programWorkouts),
@@ -311,6 +510,7 @@ const elements = {
   addExercise: $("#addExercise"), saveStatus: $("#saveStatus"),
 };
 const dayCheckboxes = Array.from(document.querySelectorAll(".day-picker input[type='checkbox']"));
+const equipmentProfileInputs = Array.from(document.querySelectorAll("input[name='equipmentProfile']"));
 
 function getDayId(date) { return dayDefinitions[(date.getDay() + 6) % 7].id; }
 function getMonday(date = new Date()) {
@@ -325,11 +525,34 @@ function orderedTrainingDays() {
   return Array.from({ length: 7 }, (_, index) => dayDefinitions[(start + index) % 7].id)
     .filter((id) => state.trainingDays.includes(id));
 }
+function resolveExerciseVariant(exercise, slotIndex, profileId = state.equipmentProfile) {
+  const visualProfile = equipmentProfiles[profileId]?.visualProfile || "best";
+  const sourceProfile = profileId === "beginner" ? "machine" : profileId;
+  const variant = sourceProfile === "best" ? {} : equipmentVariants[exercise.id]?.[sourceProfile];
+  if (variant?.skip) return null;
+  const resolved = {
+    ...exercise,
+    ...(variant || {}),
+    baseName: exercise.name,
+    profileId,
+    visualProfile,
+    visualIndex: slotIndex,
+  };
+  if (profileId === "beginner") resolved.sets = slotIndex === 0 ? "3" : "2–3";
+  return resolved;
+}
 function getSchedule() {
   const assigned = new Map();
-  orderedTrainingDays().forEach((dayId, index) => assigned.set(dayId, {
-    ...state.workouts[index], dayId, workoutId: state.workouts[index].id, sequence: index + 1, isRest: false,
-  }));
+  orderedTrainingDays().forEach((dayId, index) => {
+    const workout = state.workouts[index];
+    const exercises = workout.exercises
+      .map((exercise, slotIndex) => resolveExerciseVariant(exercise, slotIndex))
+      .filter(Boolean);
+    const profileNotes = equipmentProfileNotes[state.equipmentProfile];
+    const equipmentNote = typeof profileNotes === "string" ? profileNotes : profileNotes?.[workout.id];
+    const notes = equipmentNote ? [...workout.notes, equipmentNote] : workout.notes;
+    assigned.set(dayId, { ...workout, exercises, notes, dayId, workoutId: workout.id, sequence: index + 1, isRest: false });
+  });
   return dayDefinitions.map((day) => assigned.get(day.id) || {
     dayId: day.id, title: "Recovery day", focus: "Rest and prepare for the next session", isRest: true, exercises: [],
   });
@@ -373,23 +596,42 @@ function createMuscleMap(exercise) {
   map.append(makeElement("span", "visual-label", "Target"));
   return map;
 }
-function createMovementVisual(workout, exercise, index) {
-  const atlas = exerciseAtlases[workout.workoutId];
-  const visual = makeElement("div", "movement-visual");
+function createMovementVisual(workout, exercise, index, profileId = exercise.visualProfile, className = "movement-visual") {
+  const atlas = exerciseAtlases[profileId]?.[workout.workoutId];
+  const visual = makeElement("div", className);
   visual.setAttribute("role", "img");
   visual.setAttribute("aria-label", `${exercise.name} visual reference`);
   if (atlas) {
-    if (atlas.rows === 4) visual.classList.add("is-landscape");
-    if (atlas.layout === "wide") visual.classList.add("is-wide");
-    const column = index % 2;
-    const row = Math.floor(index / 2);
+    if (className === "movement-visual" && atlas.rows === 4) visual.classList.add("is-landscape");
+    if (className === "movement-visual" && atlas.layout === "wide") visual.classList.add("is-wide");
+    const columns = atlas.columns || 2;
+    const sourceIndex = atlas.cells?.[index] ?? index;
+    const column = sourceIndex % columns;
+    const row = Math.floor(sourceIndex / columns);
+    const horizontalPosition = columns === 1 ? 0 : (column / (columns - 1)) * 100;
     const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
     visual.style.backgroundImage = `url("${atlas.src}")`;
-    visual.style.backgroundSize = `200% ${atlas.rows * 100}%`;
-    visual.style.backgroundPosition = `${column * 100}% ${verticalPosition}%`;
+    visual.style.backgroundSize = `${columns * 100}% ${atlas.rows * 100}%`;
+    visual.style.backgroundPosition = `${horizontalPosition}% ${verticalPosition}%`;
   }
-  visual.append(makeElement("span", "visual-label", "Movement"));
+  if (className === "movement-visual") visual.append(makeElement("span", "visual-label", "Movement"));
   return visual;
+}
+function getAlternativeChoices(exercise) {
+  const variants = equipmentVariants[exercise.id]; if (!variants) return [];
+  const seen = new Set([exercise.name.toLowerCase()]);
+  return ["machine", "dumbbell", "barbell", "best"].flatMap((profileId) => {
+    const variant = profileId === "best" ? { name: exercise.baseName } : variants[profileId];
+    if (!variant || variant.skip || !variant.name) return [];
+    const normalized = variant.name.toLowerCase(); if (seen.has(normalized)) return [];
+    seen.add(normalized);
+    return [{
+      name: variant.name,
+      profileId,
+      label: equipmentProfiles[profileId].label,
+      visualProfile: equipmentProfiles[profileId].visualProfile,
+    }];
+  });
 }
 function createExerciseCard(workout, exercise, index) {
   const key = completionKey(workout, exercise); const complete = Boolean(weekCompletion()[key]);
@@ -399,31 +641,39 @@ function createExerciseCard(workout, exercise, index) {
   checkbox.setAttribute("aria-label", `Mark ${exercise.name} complete`); toggle.append(checkbox);
   const copy = makeElement("div", "exercise-copy");
   if (index === 0) copy.append(makeElement("span", "exercise-role", "Primary compound"));
+  copy.append(makeElement("span", "exercise-tool", equipmentProfiles[state.equipmentProfile].label));
   copy.append(makeElement("h3", "exercise-name", exercise.name));
   const target = makeElement("p", "target-copy"); const strong = makeElement("strong", "", exercise.target || "Target");
   target.append(strong, document.createTextNode(exercise.secondary ? ` · ${exercise.secondary}` : "")); copy.append(target);
   top.append(toggle, copy);
   const referenceVisuals = makeElement("div", "reference-visuals");
-  referenceVisuals.append(createMovementVisual(workout, exercise, index), createMuscleMap(exercise));
+  referenceVisuals.append(createMovementVisual(workout, exercise, exercise.visualIndex ?? index), createMuscleMap(exercise));
   const prescription = makeElement("div", "prescription");
   [["Sets", exercise.sets], ["Reps", exercise.reps], ["Rest", exercise.rest]].forEach(([label, value]) => {
     const item = makeElement("div"); item.append(makeElement("span", "", label), makeElement("strong", "", value || "—")); prescription.append(item);
   });
   const tempo = makeElement("div", "tempo-row"); tempo.append(makeElement("span", "", "Tempo"), makeElement("strong", "", exercise.tempo || "Controlled"));
   card.append(top, referenceVisuals, prescription, tempo);
-  const alternative = exerciseAlternatives[exercise.id];
-  if (alternative) {
+  const guidance = exerciseAlternatives[exercise.id];
+  const alternatives = getAlternativeChoices(exercise);
+  if (alternatives.length) {
     const controlsId = `alternatives-${workout.dayId}-${exercise.id}`;
     const button = makeElement("button", "alternatives-button");
-    button.type = "button"; button.dataset.alternativesTarget = controlsId;
+    button.type = "button"; button.dataset.alternativesTarget = controlsId; button.dataset.closedLabel = `Show ${alternatives.length} alternatives`;
     button.setAttribute("aria-expanded", "false"); button.setAttribute("aria-controls", controlsId);
-    button.append(makeElement("span", "", "Show alternatives"), makeElement("span", "machine-first", "Machines first"), makeElement("span", "alternatives-chevron", "⌄"));
+    button.append(makeElement("span", "", `Show ${alternatives.length} alternatives`), makeElement("span", "machine-first", "With images"), makeElement("span", "alternatives-chevron", "⌄"));
     const panel = makeElement("div", "alternatives-panel"); panel.id = controlsId; panel.hidden = true;
-    panel.append(makeElement("p", "alternatives-intro", "Same target — choose one replacement:"));
-    const list = makeElement("ul");
-    alternative.options.forEach((option) => list.append(makeElement("li", "", option)));
+    panel.append(makeElement("p", "alternatives-intro", "Same training slot — choose one replacement:"));
+    const list = makeElement("ul", "alternative-options");
+    alternatives.forEach((alternative) => {
+      const item = makeElement("li", "alternative-option");
+      const altExercise = { name: alternative.name };
+      const visual = createMovementVisual(workout, altExercise, exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
+      const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name));
+      item.append(visual, text); list.append(item);
+    });
     const recommendation = makeElement("p", "coach-note");
-    recommendation.append(makeElement("strong", "", "Coach’s take"), document.createTextNode(alternative.recommendation));
+    recommendation.append(makeElement("strong", "", "Coach’s take"), document.createTextNode(guidance?.recommendation || "Use the option you can perform comfortably and progress consistently. Replace the programmed exercise rather than adding duplicate sets."));
     panel.append(list, recommendation); card.append(button, panel);
   }
   return card;
@@ -432,7 +682,7 @@ function renderWorkout() {
   const workout = getSchedule().find((day) => day.dayId === selectedDayId); const day = dayDefinitions.find((item) => item.id === selectedDayId);
   elements.workoutHero.hidden = workout.isRest; elements.workoutDetails.hidden = workout.isRest; elements.restState.hidden = !workout.isRest;
   if (workout.isRest) return;
-  elements.selectedDayLabel.textContent = `${day.label} · Workout ${workout.sequence}`; elements.workoutDuration.textContent = workout.duration;
+  elements.selectedDayLabel.textContent = `${day.label} · Workout ${workout.sequence} · ${equipmentProfiles[state.equipmentProfile].short}`; elements.workoutDuration.textContent = workout.duration;
   elements.workoutTitle.textContent = workout.title; elements.workoutFocus.textContent = workout.focus;
   elements.exerciseCount.textContent = `${workout.exercises.length} exercises`;
   renderTextList(elements.warmupList, workout.warmup); renderTextList(elements.notesList, workout.notes);
@@ -463,6 +713,7 @@ function openEditDialog() {
 }
 function openSettingsDialog() {
   elements.profileName.value = state.profileName; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
+  equipmentProfileInputs.forEach((input) => { input.checked = input.value === state.equipmentProfile; });
   dayCheckboxes.forEach((checkbox) => { checkbox.checked = state.trainingDays.includes(checkbox.value); }); elements.settingsDialog.showModal();
 }
 
@@ -473,7 +724,7 @@ elements.exerciseList.addEventListener("click", (event) => {
   const panel = document.getElementById(button.dataset.alternativesTarget); if (!panel) return;
   const willOpen = button.getAttribute("aria-expanded") !== "true";
   button.setAttribute("aria-expanded", String(willOpen)); panel.hidden = !willOpen;
-  button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : "Show alternatives";
+  button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : button.dataset.closedLabel;
 });
 elements.editWorkout.addEventListener("click", openEditDialog); elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
 dayCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", () => {
@@ -483,7 +734,8 @@ elements.settingsForm.addEventListener("submit", (event) => {
   if (event.submitter?.value === "cancel") return; event.preventDefault(); const selected = dayCheckboxes.filter((item) => item.checked).map((item) => item.value);
   if (!selected.length) { elements.scheduleError.textContent = "Choose at least one training day."; return; }
   if (!selected.includes(elements.startDay.value)) { elements.scheduleError.textContent = "Your first training day must also be selected below."; return; }
-  state.profileName = elements.profileName.value.trim(); state.startDayId = elements.startDay.value; state.trainingDays = selected; saveState(); elements.settingsDialog.close(); renderAll();
+  const equipmentProfile = equipmentProfileInputs.find((input) => input.checked)?.value || "best";
+  state.profileName = elements.profileName.value.trim(); state.equipmentProfile = equipmentProfile; state.startDayId = elements.startDay.value; state.trainingDays = selected; saveState(); elements.settingsDialog.close(); renderAll();
 });
 elements.resetData.addEventListener("click", () => {
   if (!confirm("Reset your plan, edits and completion history? This cannot be undone on this device.")) return;

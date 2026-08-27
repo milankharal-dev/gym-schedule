@@ -109,6 +109,7 @@
             <p><strong>Effort:</strong> End the set before technique breaks down. The final reps should feel challenging but controlled.</p>
             <p><strong>Coverage:</strong> The week covers the major muscle groups for balanced development, including back width, upper-back thickness, lower back and traps.</p>
             <p><strong>Machines first:</strong> Alternative lists put stable machine options first. Machines are excellent for growth; use a free-weight option when you also value that specific strength skill or movement challenge.</p>
+            <p><strong>Equipment mode:</strong> Choose Beginner, Machines, Dumbbells, Barbells, or Best mix in Plan settings. The workout, movement image and alternatives update together.</p>
             <p><strong>Alternatives:</strong> Use each listed option as a replacement, not an extra exercise. Adding every similar variation creates duplicate volume without adding a new movement pattern.</p>
             <p><strong>Growth and definition:</strong> Progressive training and adequate protein build or retain muscle. How visibly “toned” it looks also depends on body-fat level; no single exercise can spot-reduce fat.</p>
             <p><strong>Safety:</strong> Stop for sharp or increasing pain, dizziness, chest discomfort, or feeling unwell. Ask a qualified professional when unsure.</p>
@@ -126,6 +127,16 @@
           <button class="close-button" value="cancel" type="submit" aria-label="Close settings">×</button>
         </div>
         <label class="field"><span>Your name</span><input id="profileName" maxlength="30" placeholder="Your name" /></label>
+        <fieldset class="equipment-picker">
+          <legend>How do you want to train?</legend>
+          <div>
+            <label><input type="radio" name="equipmentProfile" value="beginner" /><span><strong>Beginner</strong><small>Easiest machines · 2–3 sets</small></span></label>
+            <label><input type="radio" name="equipmentProfile" value="machine" /><span><strong>Machines</strong><small>Machine, cable and Smith only</small></span></label>
+            <label><input type="radio" name="equipmentProfile" value="dumbbell" /><span><strong>Dumbbells</strong><small>Dumbbell resistance only</small></span></label>
+            <label><input type="radio" name="equipmentProfile" value="barbell" /><span><strong>Barbells</strong><small>Barbell or EZ-bar only</small></span></label>
+            <label><input type="radio" name="equipmentProfile" value="best" /><span><strong>Best mix</strong><small>Best movement for each training slot</small></span></label>
+          </div>
+        </fieldset>
         <label class="field">
           <span>First training day</span>
           <select id="startDay">
