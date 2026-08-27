@@ -1,4 +1,4 @@
-const CACHE_NAME = "training-week-v6";
+const CACHE_NAME = "training-week-v7";
 const APP_ASSETS = ["./", "./index.html", "./styles.css", "./app.js", "./manifest.webmanifest", "./icon.svg", "./assets/muscle-anatomy.png"];
 
 self.addEventListener("install", (event) => {

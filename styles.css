@@ -166,16 +166,13 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .close-button { font-size: 1.25rem; }
 .field { display: grid; gap: 6px; margin-bottom: 15px; color: #414941; font-size: .7rem; font-weight: 800; }
 .field input, .field select { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 11px; color: var(--ink); background: #fafbf8; }
-.equipment-picker, .day-picker { margin: 5px 0 16px; padding: 0; border: 0; }
-.equipment-picker legend, .day-picker legend { margin-bottom: 10px; font-size: .72rem; font-weight: 800; }
-.equipment-picker > div { display: grid; gap: 6px; }
-.equipment-picker label { cursor: pointer; }
-.equipment-picker input { position: absolute; opacity: 0; }
-.equipment-picker span { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 7px; align-items: center; min-height: 46px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 11px; background: #fafbf8; }
-.equipment-picker strong { font-family: "Manrope", sans-serif; font-size: .72rem; }
-.equipment-picker small { color: var(--muted); font-size: .61rem; font-weight: 500; line-height: 1.35; }
-.equipment-picker input:checked + span { border-color: var(--dark); color: var(--accent); background: var(--dark); box-shadow: 0 6px 14px rgba(16,20,16,.12); }
-.equipment-picker input:checked + span small { color: #cbd0ca; }
+.equipment-profile-field { margin-bottom: 8px; }
+.equipment-profile-field small { min-height: 2.7em; color: var(--muted); font-size: .62rem; font-weight: 500; line-height: 1.45; }
+.equipment-preview { margin: 0 0 18px; padding: 10px 11px; border-left: 3px solid var(--accent-dark); border-radius: 0 10px 10px 0; background: #f2f6e9; }
+.equipment-preview span { display: block; margin-bottom: 3px; color: #61733d; font-size: .53rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.equipment-preview strong { display: block; font-family: "Manrope", sans-serif; font-size: .66rem; line-height: 1.45; }
+.day-picker { margin: 5px 0 16px; padding: 0; border: 0; }
+.day-picker legend { margin-bottom: 10px; font-size: .72rem; font-weight: 800; }
 .day-picker legend small { display: block; margin-top: 2px; color: var(--muted); font-weight: 500; }
 .day-picker > div { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
 .day-picker label { cursor: pointer; }

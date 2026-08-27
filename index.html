@@ -127,16 +127,18 @@
           <button class="close-button" value="cancel" type="submit" aria-label="Close settings">×</button>
         </div>
         <label class="field"><span>Your name</span><input id="profileName" maxlength="30" placeholder="Your name" /></label>
-        <fieldset class="equipment-picker">
-          <legend>How do you want to train?</legend>
-          <div>
-            <label><input type="radio" name="equipmentProfile" value="beginner" /><span><strong>Beginner</strong><small>Easiest machines · 2–3 sets</small></span></label>
-            <label><input type="radio" name="equipmentProfile" value="machine" /><span><strong>Machines</strong><small>Machine, cable and Smith only</small></span></label>
-            <label><input type="radio" name="equipmentProfile" value="dumbbell" /><span><strong>Dumbbells</strong><small>Dumbbell resistance only</small></span></label>
-            <label><input type="radio" name="equipmentProfile" value="barbell" /><span><strong>Barbells</strong><small>Barbell or EZ-bar only</small></span></label>
-            <label><input type="radio" name="equipmentProfile" value="best" /><span><strong>Best mix</strong><small>Best movement for each training slot</small></span></label>
-          </div>
-        </fieldset>
+        <label class="field equipment-profile-field">
+          <span>How do you want to train?</span>
+          <select id="equipmentProfile" required>
+            <option value="beginner">Beginner — easiest machines</option>
+            <option value="machine">Machines only</option>
+            <option value="dumbbell">Dumbbells only</option>
+            <option value="barbell">Barbells only</option>
+            <option value="best">Best equipment mix</option>
+          </select>
+          <small id="equipmentProfileHelp"></small>
+        </label>
+        <div class="equipment-preview"><span>First exercises preview</span><strong id="equipmentProfilePreview"></strong></div>
         <label class="field">
           <span>First training day</span>
           <select id="startDay">

@@ -33,11 +33,11 @@ const exerciseAtlases = {
 };
 
 const equipmentProfiles = {
-  beginner: { label: "Beginner", short: "Beginner · easy machines", visualProfile: "machine" },
-  machine: { label: "Machines", short: "Machines only", visualProfile: "machine" },
-  dumbbell: { label: "Dumbbells", short: "Dumbbells only", visualProfile: "dumbbell" },
-  barbell: { label: "Barbells", short: "Barbells only", visualProfile: "barbell" },
-  best: { label: "Best mix", short: "Best equipment mix", visualProfile: "best" },
+  beginner: { label: "Beginner", short: "Beginner · easy machines", visualProfile: "machine", description: "Easiest stable machines with 2–3 working sets." },
+  machine: { label: "Machines", short: "Machines only", visualProfile: "machine", description: "Machine, cable and Smith-machine exercises only." },
+  dumbbell: { label: "Dumbbells", short: "Dumbbells only", visualProfile: "dumbbell", description: "Dumbbell resistance only; unavailable movement patterns are omitted." },
+  barbell: { label: "Barbells", short: "Barbells only", visualProfile: "barbell", description: "Barbell and EZ-bar exercises only; duplicate substitutions are omitted." },
+  best: { label: "Best mix", short: "Best equipment mix", visualProfile: "best", description: "The strongest practical combination of free weights, cables and machines." },
 };
 
 const equipmentProfileNotes = {
@@ -504,13 +504,13 @@ const elements = {
   workoutDetails: $("#workoutDetails"), warmupList: $("#warmupList"), exerciseList: $("#exerciseList"), notesList: $("#notesList"),
   restState: $("#restState"), editWorkout: $("#editWorkout"), openSettings: $("#openSettings"),
   openScheduleSettings: $("#openScheduleSettings"), settingsDialog: $("#settingsDialog"), settingsForm: $("#settingsForm"),
-  profileName: $("#profileName"), startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
+  profileName: $("#profileName"), equipmentProfile: $("#equipmentProfile"), equipmentProfileHelp: $("#equipmentProfileHelp"),
+  equipmentProfilePreview: $("#equipmentProfilePreview"), startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
   editDialog: $("#editDialog"), editForm: $("#editForm"), editDayLabel: $("#editDayLabel"), editTitle: $("#editTitle"),
   editFocus: $("#editFocus"), exerciseEditor: $("#exerciseEditor"), editorTemplate: $("#exerciseEditorRow"),
   addExercise: $("#addExercise"), saveStatus: $("#saveStatus"),
 };
 const dayCheckboxes = Array.from(document.querySelectorAll(".day-picker input[type='checkbox']"));
-const equipmentProfileInputs = Array.from(document.querySelectorAll("input[name='equipmentProfile']"));
 
 function getDayId(date) { return dayDefinitions[(date.getDay() + 6) % 7].id; }
 function getMonday(date = new Date()) {
@@ -711,9 +711,15 @@ function openEditDialog() {
   elements.editTitle.value = workout.title; elements.editFocus.value = workout.focus; elements.exerciseEditor.replaceChildren();
   workout.exercises.forEach(addEditorRow); elements.editDialog.showModal();
 }
+function renderEquipmentProfilePreview() {
+  const profileId = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
+  elements.equipmentProfileHelp.textContent = `${equipmentProfiles[profileId].description} Exercises and images update after you tap Save plan.`;
+  const firstExercises = state.workouts.slice(0, 3).map((workout) => resolveExerciseVariant(workout.exercises[0], 0, profileId)?.name).filter(Boolean);
+  elements.equipmentProfilePreview.textContent = firstExercises.join(" · ");
+}
 function openSettingsDialog() {
-  elements.profileName.value = state.profileName; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
-  equipmentProfileInputs.forEach((input) => { input.checked = input.value === state.equipmentProfile; });
+  elements.profileName.value = state.profileName; elements.equipmentProfile.value = state.equipmentProfile; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
+  renderEquipmentProfilePreview();
   dayCheckboxes.forEach((checkbox) => { checkbox.checked = state.trainingDays.includes(checkbox.value); }); elements.settingsDialog.showModal();
 }
 
@@ -727,6 +733,7 @@ elements.exerciseList.addEventListener("click", (event) => {
   button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : button.dataset.closedLabel;
 });
 elements.editWorkout.addEventListener("click", openEditDialog); elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
+elements.equipmentProfile.addEventListener("change", renderEquipmentProfilePreview);
 dayCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", () => {
   const checked = dayCheckboxes.filter((item) => item.checked); if (checked.length > 5) { checkbox.checked = false; elements.scheduleError.textContent = "Choose no more than five training days."; } else { elements.scheduleError.textContent = ""; }
 }));
@@ -734,7 +741,7 @@ elements.settingsForm.addEventListener("submit", (event) => {
   if (event.submitter?.value === "cancel") return; event.preventDefault(); const selected = dayCheckboxes.filter((item) => item.checked).map((item) => item.value);
   if (!selected.length) { elements.scheduleError.textContent = "Choose at least one training day."; return; }
   if (!selected.includes(elements.startDay.value)) { elements.scheduleError.textContent = "Your first training day must also be selected below."; return; }
-  const equipmentProfile = equipmentProfileInputs.find((input) => input.checked)?.value || "best";
+  const equipmentProfile = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
   state.profileName = elements.profileName.value.trim(); state.equipmentProfile = equipmentProfile; state.startDayId = elements.startDay.value; state.trainingDays = selected; saveState(); elements.settingsDialog.close(); renderAll();
 });
 elements.resetData.addEventListener("click", () => {
