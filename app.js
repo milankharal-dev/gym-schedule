@@ -505,7 +505,7 @@ const elements = {
   restState: $("#restState"), editWorkout: $("#editWorkout"), openSettings: $("#openSettings"),
   openScheduleSettings: $("#openScheduleSettings"), settingsDialog: $("#settingsDialog"), settingsForm: $("#settingsForm"),
   profileName: $("#profileName"), equipmentProfile: $("#equipmentProfile"), equipmentProfileHelp: $("#equipmentProfileHelp"),
-  equipmentProfilePreview: $("#equipmentProfilePreview"), startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
+  startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
   editDialog: $("#editDialog"), editForm: $("#editForm"), editDayLabel: $("#editDayLabel"), editTitle: $("#editTitle"),
   editFocus: $("#editFocus"), exerciseEditor: $("#exerciseEditor"), editorTemplate: $("#exerciseEditorRow"),
   addExercise: $("#addExercise"), saveStatus: $("#saveStatus"),
@@ -693,7 +693,12 @@ function renderProgress() {
   const done = keys.filter((key) => completion[key]).length; const percent = keys.length ? Math.round(done / keys.length * 100) : 0;
   elements.progressPercent.textContent = `${percent}%`; elements.progressLabel.textContent = `${done}/${keys.length}`;
 }
-function renderAll() { renderHeader(); renderTabs(); renderWorkout(); renderProgress(); }
+function renderEquipmentProfile() {
+  const profile = equipmentProfiles[state.equipmentProfile] || equipmentProfiles.best;
+  elements.equipmentProfile.value = state.equipmentProfile;
+  elements.equipmentProfileHelp.textContent = `${profile.description} Changes apply instantly.`;
+}
+function renderAll() { renderHeader(); renderTabs(); renderEquipmentProfile(); renderWorkout(); renderProgress(); }
 
 function makeId(name) {
   const slug = name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "exercise";
@@ -711,15 +716,8 @@ function openEditDialog() {
   elements.editTitle.value = workout.title; elements.editFocus.value = workout.focus; elements.exerciseEditor.replaceChildren();
   workout.exercises.forEach(addEditorRow); elements.editDialog.showModal();
 }
-function renderEquipmentProfilePreview() {
-  const profileId = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
-  elements.equipmentProfileHelp.textContent = `${equipmentProfiles[profileId].description} Exercises and images update after you tap Save plan.`;
-  const firstExercises = state.workouts.slice(0, 3).map((workout) => resolveExerciseVariant(workout.exercises[0], 0, profileId)?.name).filter(Boolean);
-  elements.equipmentProfilePreview.textContent = firstExercises.join(" · ");
-}
 function openSettingsDialog() {
-  elements.profileName.value = state.profileName; elements.equipmentProfile.value = state.equipmentProfile; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
-  renderEquipmentProfilePreview();
+  elements.profileName.value = state.profileName; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
   dayCheckboxes.forEach((checkbox) => { checkbox.checked = state.trainingDays.includes(checkbox.value); }); elements.settingsDialog.showModal();
 }
 
@@ -733,7 +731,12 @@ elements.exerciseList.addEventListener("click", (event) => {
   button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : button.dataset.closedLabel;
 });
 elements.editWorkout.addEventListener("click", openEditDialog); elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
-elements.equipmentProfile.addEventListener("change", renderEquipmentProfilePreview);
+elements.equipmentProfile.addEventListener("change", () => {
+  const profileId = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
+  state.equipmentProfile = profileId;
+  saveState();
+  renderAll();
+});
 dayCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", () => {
   const checked = dayCheckboxes.filter((item) => item.checked); if (checked.length > 5) { checkbox.checked = false; elements.scheduleError.textContent = "Choose no more than five training days."; } else { elements.scheduleError.textContent = ""; }
 }));
@@ -741,8 +744,7 @@ elements.settingsForm.addEventListener("submit", (event) => {
   if (event.submitter?.value === "cancel") return; event.preventDefault(); const selected = dayCheckboxes.filter((item) => item.checked).map((item) => item.value);
   if (!selected.length) { elements.scheduleError.textContent = "Choose at least one training day."; return; }
   if (!selected.includes(elements.startDay.value)) { elements.scheduleError.textContent = "Your first training day must also be selected below."; return; }
-  const equipmentProfile = equipmentProfiles[elements.equipmentProfile.value] ? elements.equipmentProfile.value : "best";
-  state.profileName = elements.profileName.value.trim(); state.equipmentProfile = equipmentProfile; state.startDayId = elements.startDay.value; state.trainingDays = selected; saveState(); elements.settingsDialog.close(); renderAll();
+  state.profileName = elements.profileName.value.trim(); state.startDayId = elements.startDay.value; state.trainingDays = selected; saveState(); elements.settingsDialog.close(); renderAll();
 });
 elements.resetData.addEventListener("click", () => {
   if (!confirm("Reset your plan, edits and completion history? This cannot be undone on this device.")) return;
@@ -765,5 +767,5 @@ elements.editForm.addEventListener("submit", (event) => {
 });
 [elements.settingsDialog, elements.editDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=8"));
 renderAll();

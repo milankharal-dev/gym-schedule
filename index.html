@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=8" />
   </head>
   <body>
     <div class="app-shell">
@@ -49,6 +49,19 @@
             <button class="plan-button" id="openScheduleSettings" type="button">Edit days</button>
           </div>
           <div class="day-tabs" id="dayTabs" role="tablist" aria-label="Days of the week"></div>
+          <label class="equipment-switcher" for="equipmentProfile">
+            <span>
+              <strong>Training equipment</strong>
+              <small id="equipmentProfileHelp">Choose the equipment available to you.</small>
+            </span>
+            <select id="equipmentProfile" aria-label="Training equipment">
+              <option value="beginner">Beginner</option>
+              <option value="machine">Machines only</option>
+              <option value="dumbbell">Dumbbells only</option>
+              <option value="barbell">Barbells only</option>
+              <option value="best">Best mix</option>
+            </select>
+          </label>
         </section>
 
         <section class="workout-hero" id="workoutHero">
@@ -109,7 +122,7 @@
             <p><strong>Effort:</strong> End the set before technique breaks down. The final reps should feel challenging but controlled.</p>
             <p><strong>Coverage:</strong> The week covers the major muscle groups for balanced development, including back width, upper-back thickness, lower back and traps.</p>
             <p><strong>Machines first:</strong> Alternative lists put stable machine options first. Machines are excellent for growth; use a free-weight option when you also value that specific strength skill or movement challenge.</p>
-            <p><strong>Equipment mode:</strong> Choose Beginner, Machines, Dumbbells, Barbells, or Best mix in Plan settings. The workout, movement image and alternatives update together.</p>
+            <p><strong>Equipment mode:</strong> Use the Training equipment selector below the days. The workout, movement image and alternatives update together immediately.</p>
             <p><strong>Alternatives:</strong> Use each listed option as a replacement, not an extra exercise. Adding every similar variation creates duplicate volume without adding a new movement pattern.</p>
             <p><strong>Growth and definition:</strong> Progressive training and adequate protein build or retain muscle. How visibly “toned” it looks also depends on body-fat level; no single exercise can spot-reduce fat.</p>
             <p><strong>Safety:</strong> Stop for sharp or increasing pain, dizziness, chest discomfort, or feeling unwell. Ask a qualified professional when unsure.</p>
@@ -127,18 +140,6 @@
           <button class="close-button" value="cancel" type="submit" aria-label="Close settings">×</button>
         </div>
         <label class="field"><span>Your name</span><input id="profileName" maxlength="30" placeholder="Your name" /></label>
-        <label class="field equipment-profile-field">
-          <span>How do you want to train?</span>
-          <select id="equipmentProfile" required>
-            <option value="beginner">Beginner — easiest machines</option>
-            <option value="machine">Machines only</option>
-            <option value="dumbbell">Dumbbells only</option>
-            <option value="barbell">Barbells only</option>
-            <option value="best">Best equipment mix</option>
-          </select>
-          <small id="equipmentProfileHelp"></small>
-        </label>
-        <div class="equipment-preview"><span>First exercises preview</span><strong id="equipmentProfilePreview"></strong></div>
         <label class="field">
           <span>First training day</span>
           <select id="startDay">
@@ -194,6 +195,6 @@
       </div>
     </template>
 
-    <script src="./app.js" defer></script>
+    <script src="./app.js?v=8" defer></script>
   </body>
 </html>
