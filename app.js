@@ -1,5 +1,6 @@
 const STORAGE_KEY = "gym-schedule-v5";
 const LEGACY_STORAGE_KEYS = ["gym-schedule-v4", "gym-schedule-v3"];
+const PROGRAM_VERSION = 2;
 const MUSCLE_IMAGE = "./assets/muscle-anatomy.png";
 const exerciseAtlases = {
   best: {
@@ -63,8 +64,8 @@ const dayDefinitions = [
   { id: "sunday", label: "Sunday", short: "Sun" },
 ];
 
-const e = (id, name, sets, reps, rest, tempo, target, secondary, regions) => ({
-  id, name, sets, reps, rest, tempo, target, secondary, regions,
+const e = (id, name, sets, reps, rest, tempo, target, secondary, regions, extras = {}) => ({
+  id, name, sets, reps, rest, tempo, target, secondary, regions, ...extras,
 });
 
 const programWorkouts = [
@@ -156,25 +157,23 @@ const programWorkouts = [
     ],
   },
   {
-    id: "arms-chest-accessory", title: "Arms + chest", focus: "Triceps and biceps with controlled upper-chest accessories", duration: "60–75 min",
+    id: "arms-chest-accessory", title: "Biceps + upper-body refresh", focus: "Biceps growth with a small chest and triceps maintenance dose", duration: "45–60 min",
     warmup: [
-      "5 min easy cardio.", "Band pull-aparts and arm circles — 2 rounds of 12 reps.",
-      "Very light curls and pushdowns — 2 sets of 15 each.", "Complete 3–4 gradual close-grip bench practice sets.",
+      "5 min easy cardio — finish warm, not tired.", "Wrist circles, arm circles and band pull-aparts — 2 rounds of 10–12 reps.",
+      "Very light curls and pushdowns — 2 sets of 15 each.", "Complete 2–3 gradual practice sets of the first curl before working sets.",
     ],
     exercises: [
-      e("close-grip-bench", "Close-grip bench press", "4", "6–8", "2–3 min", "3-1-1-0", "Triceps", "Chest, front delts", ["triceps", "chest"]),
-      e("low-high-fly", "Low-to-high cable fly", "3", "12–15", "75 sec", "3-1-2-0", "Upper chest", "Front delts", ["chest"]),
-      e("ez-bar-curl", "EZ-bar curl", "3", "8–12", "75 sec", "3-1-1-0", "Biceps", "Brachialis, forearms", ["biceps"]),
-      e("incline-curl", "Incline dumbbell curl", "3", "10–12", "60 sec", "3-1-1-0", "Biceps", "Forearms", ["biceps"]),
-      e("cable-pushdown", "Cable pushdown", "3", "10–12", "60 sec", "2-1-2-0", "Triceps", "Forearms", ["triceps"]),
-      e("overhead-cable-extension", "Overhead cable extension", "3", "12–15", "60 sec", "3-1-1-0", "Triceps", "Forearms", ["triceps"]),
+      e("ez-bar-curl", "EZ-bar curl", "4", "6–10", "90 sec", "3-1-1-0", "Biceps", "Brachialis, forearms", ["biceps"], { primaryLabel: "Primary biceps lift", visualIndex: 2 }),
+      e("incline-curl", "Incline dumbbell curl", "4", "8–12", "75 sec", "3-1-1-0", "Biceps", "Forearms", ["biceps"], { visualIndex: 3 }),
+      e("low-high-fly", "Low-to-high cable fly", "2", "10–15", "60 sec", "3-1-2-0", "Upper chest", "Front delts", ["chest"], { visualIndex: 1 }),
+      e("cable-pushdown", "Cable pushdown", "2", "10–15", "60 sec", "2-1-2-0", "Triceps", "Forearms", ["triceps"], { visualIndex: 4 }),
     ],
     notes: [
-      "Coverage: one heavy triceps compound, two curl angles, two extension angles and upper-chest work balance the session.",
-      "The close-grip bench is the day's primary compound. Keep hands just inside shoulder width rather than touching.",
-      "After the first exercise, prioritize smooth reps and muscle control over maximum loads.",
-      "Keep the upper arm quiet during curls and extensions; stop when other joints take over.",
-      "Reduce sets if chest, elbows or shoulders have not recovered from earlier sessions.",
+      "Priority: two biceps exercises come first; chest and triceps each receive only one refresher exercise, keeping this from turning into another push day.",
+      "Programming limitation: direct biceps exercises are single-joint movements. A chest or back compound first would shift focus away from biceps, so the heaviest curl is the primary lift today.",
+      "The first curl is the heavier loading slot; the second trains the biceps in a lengthened position. These are complementary angles, not duplicate exercises.",
+      "Keep the upper arm quiet during curls and stop the set when your shoulders or lower back begin moving the weight.",
+      "Chest and triceps work is maintenance volume. Do not add extra sets unless those muscles are fully recovered from the earlier chest session.",
     ],
   },
 ];
@@ -466,7 +465,7 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultState = () => ({
   profileName: "", equipmentProfile: "best", startDayId: "monday",
   trainingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
-  workouts: clone(programWorkouts), completions: {},
+  programVersion: PROGRAM_VERSION, workouts: clone(programWorkouts), completions: {},
 });
 
 function loadState() {
@@ -478,12 +477,15 @@ function loadState() {
     const validDays = Array.isArray(stored.trainingDays)
       ? stored.trainingDays.filter((id) => dayDefinitions.some((day) => day.id === id)).slice(0, 5) : [];
     const trainingDays = validDays.length ? validDays : defaultState().trainingDays;
+    const needsProgramUpdate = stored.programVersion !== PROGRAM_VERSION;
     return {
       profileName: typeof stored.profileName === "string" ? stored.profileName : "",
       equipmentProfile: equipmentProfiles[stored.equipmentProfile] ? stored.equipmentProfile : "best",
       startDayId: trainingDays.includes(stored.startDayId) ? stored.startDayId : trainingDays[0],
       trainingDays,
+      programVersion: PROGRAM_VERSION,
       workouts: Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
+        if (needsProgramUpdate && template.id === "arms-chest-accessory") return clone(template);
         const saved = stored.workouts.find((workout) => workout.id === template.id);
         return saved ? { ...clone(template), ...saved } : clone(template);
       }) : clone(programWorkouts),
@@ -536,7 +538,7 @@ function resolveExerciseVariant(exercise, slotIndex, profileId = state.equipment
     baseName: exercise.name,
     profileId,
     visualProfile,
-    visualIndex: slotIndex,
+    visualIndex: variant?.visualIndex ?? exercise.visualIndex ?? slotIndex,
   };
   if (profileId === "beginner") resolved.sets = slotIndex === 0 ? "3" : "2–3";
   return resolved;
@@ -640,7 +642,7 @@ function createExerciseCard(workout, exercise, index) {
   const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = complete; checkbox.dataset.completionKey = key;
   checkbox.setAttribute("aria-label", `Mark ${exercise.name} complete`); toggle.append(checkbox);
   const copy = makeElement("div", "exercise-copy");
-  if (index === 0) copy.append(makeElement("span", "exercise-role", "Primary compound"));
+  if (index === 0) copy.append(makeElement("span", "exercise-role", exercise.primaryLabel || "Primary compound"));
   copy.append(makeElement("span", "exercise-tool", equipmentProfiles[state.equipmentProfile].label));
   copy.append(makeElement("h3", "exercise-name", exercise.name));
   const target = makeElement("p", "target-copy"); const strong = makeElement("strong", "", exercise.target || "Target");
@@ -767,5 +769,5 @@ elements.editForm.addEventListener("submit", (event) => {
 });
 [elements.settingsDialog, elements.editDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=8"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=9"));
 renderAll();
