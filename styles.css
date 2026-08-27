@@ -15,6 +15,7 @@
 * { box-sizing: border-box; }
 html { min-width: 320px; background: var(--canvas); }
 body { margin: 0; color: var(--ink); background: var(--canvas); font-family: "DM Sans", system-ui, sans-serif; }
+body.train-mode-open { background: #101410; overflow: hidden; }
 button, input, select { font: inherit; }
 button { color: inherit; }
 button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, [role="button"]:focus-visible, .icon-button:focus-visible { outline: 3px solid rgba(111, 146, 41, .35); outline-offset: 2px; }
@@ -86,6 +87,8 @@ main { padding: 30px 0 52px; }
 .workout-hero h2 { margin: 20px 0 5px; font-size: clamp(1.9rem, 9vw, 2.8rem); letter-spacing: -.055em; line-height: 1.05; }
 .workout-hero > p { margin-bottom: 22px; color: #b9c0b9; font-size: .85rem; }
 .workout-hero-footer { padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); color: #d9ddd7; font-size: .72rem; }
+.train-button { display: inline-flex; gap: 7px; align-items: center; padding: 10px 13px; border: 0; border-radius: 999px; color: #26330e; background: var(--accent); cursor: pointer; font: 800 .69rem "DM Sans", sans-serif; box-shadow: 0 8px 24px rgba(200,245,106,.16); }
+.train-button > span:first-child { font-size: .56rem; }
 
 .info-card, .training-guide { margin: 12px 0; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); overflow: hidden; }
 .info-card summary, .training-guide summary { display: flex; align-items: center; padding: 16px; cursor: pointer; list-style: none; }
@@ -186,6 +189,43 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .secondary-button { border: 1px solid var(--line); background: var(--surface); }
 .primary-button { border: 1px solid var(--dark); color: var(--accent); background: var(--dark); }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+.train-dialog { width: min(600px, 100vw); height: 100dvh; max-width: 600px; max-height: 100dvh; margin: auto; padding: 0; border: 0; color: white; background: #101410; box-shadow: 0 28px 100px rgba(3,6,4,.7); overflow: hidden; }
+.train-dialog:focus { outline: 0; }
+.train-dialog::backdrop { background: rgba(5,8,6,.82); backdrop-filter: blur(7px); }
+.train-shell { display: flex; height: 100%; padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom)); flex-direction: column; background: radial-gradient(circle at 100% 0, rgba(111,140,59,.24), transparent 34%), #101410; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #485048 #101410; scrollbar-width: thin; }
+.train-shell::-webkit-scrollbar { width: 6px; }
+.train-shell::-webkit-scrollbar-track { background: #101410; }
+.train-shell::-webkit-scrollbar-thumb { border-radius: 999px; background: #485048; }
+.train-header { position: sticky; z-index: 3; top: 0; display: flex; align-items: center; justify-content: space-between; padding-bottom: 4px; background: linear-gradient(#101410 78%, transparent); }
+.train-header > div { min-width: 0; }
+.train-kicker { margin: 0 0 4px; color: var(--accent); font-size: .63rem; font-weight: 900; letter-spacing: .12em; line-height: 1.4; text-transform: uppercase; }
+.train-header #trainProgressText { color: #adb5ad; font-size: .72rem; }
+.train-close { display: grid; flex: 0 0 auto; width: 42px; height: 42px; padding: 0; place-items: center; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; color: white; background: rgba(255,255,255,.06); cursor: pointer; font-size: 1.35rem; }
+.train-progress-track { height: 5px; margin: 16px 0 20px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
+.train-progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--accent); transition: width .24s ease; }
+.train-exercise-view { display: flex; flex: 1; flex-direction: column; }
+.train-exercise-view[hidden], .train-complete[hidden] { display: none; }
+.train-visual-host { margin-bottom: 18px; }
+.train-movement-visual { position: relative; width: 100%; min-height: 215px; border: 1px solid rgba(255,255,255,.13); border-radius: 22px; background-color: #262b26; background-repeat: no-repeat; cursor: zoom-in; box-shadow: 0 20px 45px rgba(0,0,0,.25); overflow: hidden; }
+.train-equipment { align-self: flex-start; margin-bottom: 8px; padding: 5px 8px; border-radius: 999px; color: #354219; background: var(--accent); font-size: .55rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.train-exercise-view h2 { margin: 0; color: white; font-size: clamp(1.7rem, 8vw, 2.6rem); letter-spacing: -.055em; line-height: 1.08; }
+.train-target { margin: 9px 0 18px; color: #b9c1b9; font-size: .8rem; line-height: 1.5; }
+.train-prescription { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.train-prescription div, .train-tempo { padding: 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; background: rgba(255,255,255,.055); }
+.train-prescription span, .train-tempo span { display: block; margin-bottom: 4px; color: #939c93; font-size: .55rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.train-prescription strong, .train-tempo strong { color: white; font-family: "Manrope", sans-serif; font-size: .9rem; }
+.train-tempo { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; }
+.train-tempo span { margin: 0; }
+.train-tempo strong { font-size: .8rem; text-align: right; }
+.train-actions { display: grid; gap: 9px; margin-top: auto; padding-top: 24px; }
+.train-done, .train-exit { width: 100%; min-height: 52px; border-radius: 15px; cursor: pointer; font: 800 .78rem "DM Sans", sans-serif; }
+.train-done { border: 1px solid var(--accent); color: #26330e; background: var(--accent); }
+.train-exit { border: 1px solid rgba(255,255,255,.14); color: #d2d8d2; background: transparent; }
+.train-complete { display: grid; flex: 1; place-content: center; text-align: center; }
+.train-complete-mark { display: grid; width: 74px; height: 74px; margin: 0 auto 20px; place-items: center; border-radius: 24px; color: #26330e; background: var(--accent); font-size: 2rem; font-weight: 900; box-shadow: 0 18px 50px rgba(200,245,106,.18); }
+.train-complete h2 { margin: 0; color: white; font-size: 2.4rem; letter-spacing: -.06em; }
+.train-complete > p:not(.train-kicker) { max-width: 330px; margin: 10px auto 28px; color: #aeb6ae; font-size: .8rem; line-height: 1.55; }
 
 .visual-dialog { width: min(620px, calc(100% - 20px)); max-height: calc(100dvh - 20px); padding: 18px; border: 0; border-radius: 24px; color: white; background: #111511; box-shadow: 0 28px 90px rgba(4,7,5,.55); }
 .visual-dialog::backdrop { background: rgba(6,9,7,.82); backdrop-filter: blur(7px); }

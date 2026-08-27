@@ -653,6 +653,8 @@ function loadState() {
 
 let state = loadState();
 let selectedDayId = getDayId(new Date());
+let trainWorkout = null;
+let trainExerciseIndex = 0;
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
@@ -660,6 +662,7 @@ const elements = {
   progressPercent: $("#progressPercent"), progressLabel: $("#progressLabel"), dayTabs: $("#dayTabs"),
   workoutHero: $("#workoutHero"), selectedDayLabel: $("#selectedDayLabel"), workoutDuration: $("#workoutDuration"),
   workoutTitle: $("#workoutTitle"), workoutFocus: $("#workoutFocus"), exerciseCount: $("#exerciseCount"),
+  startTrainMode: $("#startTrainMode"), trainButtonLabel: $("#trainButtonLabel"),
   workoutDetails: $("#workoutDetails"), warmupList: $("#warmupList"), exerciseList: $("#exerciseList"), notesList: $("#notesList"),
   restState: $("#restState"), openSettings: $("#openSettings"),
   openScheduleSettings: $("#openScheduleSettings"), settingsDialog: $("#settingsDialog"), settingsForm: $("#settingsForm"),
@@ -668,6 +671,13 @@ const elements = {
   saveStatus: $("#saveStatus"), visualDialog: $("#visualDialog"),
   expandedVisual: $("#expandedVisual"), visualDialogTitle: $("#visualDialogTitle"), visualDialogProfile: $("#visualDialogProfile"),
   closeVisualDialog: $("#closeVisualDialog"),
+  trainDialog: $("#trainDialog"), exitTrainMode: $("#exitTrainMode"), trainExitButton: $("#trainExitButton"),
+  trainDayLabel: $("#trainDayLabel"), trainProgressText: $("#trainProgressText"), trainProgressBar: $("#trainProgressBar"),
+  trainExerciseView: $("#trainExerciseView"), trainVisualHost: $("#trainVisualHost"), trainEquipment: $("#trainEquipment"),
+  trainExerciseName: $("#trainExerciseName"), trainTarget: $("#trainTarget"), trainSets: $("#trainSets"),
+  trainReps: $("#trainReps"), trainRest: $("#trainRest"), trainTempo: $("#trainTempo"),
+  trainDoneButton: $("#trainDoneButton"), trainCompleteState: $("#trainCompleteState"),
+  trainCompleteText: $("#trainCompleteText"), trainCompleteExit: $("#trainCompleteExit"),
 };
 const dayCheckboxes = Array.from(document.querySelectorAll(".day-picker input[type='checkbox']"));
 
@@ -787,6 +797,21 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
   return visual;
 }
 
+function fitVisualToAtlas(visual) {
+  visual.style.aspectRatio = "3 / 2";
+  const atlasSrc = visual.dataset.atlasSrc;
+  if (!atlasSrc) return;
+  const image = new Image();
+  image.addEventListener("load", () => {
+    if (visual.dataset.atlasSrc !== atlasSrc) return;
+    const columns = Number(visual.dataset.atlasColumns) || 2;
+    const rows = Number(visual.dataset.atlasRows) || 1;
+    const cellAspect = (image.naturalWidth / columns) / (image.naturalHeight / rows);
+    if (Number.isFinite(cellAspect) && cellAspect > 0) visual.style.aspectRatio = String(cellAspect);
+  }, { once: true });
+  image.src = atlasSrc;
+}
+
 function openVisualDialog(visual) {
   if (!visual?.style.backgroundImage || visual.style.backgroundImage === "none") return;
   elements.visualDialogTitle.textContent = visual.dataset.exerciseName || "Exercise visual";
@@ -795,19 +820,10 @@ function openVisualDialog(visual) {
   elements.expandedVisual.style.backgroundImage = visual.style.backgroundImage;
   elements.expandedVisual.style.backgroundSize = visual.style.backgroundSize;
   elements.expandedVisual.style.backgroundPosition = visual.style.backgroundPosition;
-  elements.expandedVisual.style.aspectRatio = "3 / 2";
-  const atlasSrc = visual.dataset.atlasSrc;
-  if (atlasSrc) {
-    const image = new Image();
-    image.addEventListener("load", () => {
-      if (elements.expandedVisual.style.backgroundImage !== visual.style.backgroundImage) return;
-      const columns = Number(visual.dataset.atlasColumns) || 2;
-      const rows = Number(visual.dataset.atlasRows) || 1;
-      const cellAspect = (image.naturalWidth / columns) / (image.naturalHeight / rows);
-      if (Number.isFinite(cellAspect) && cellAspect > 0) elements.expandedVisual.style.aspectRatio = String(cellAspect);
-    }, { once: true });
-    image.src = atlasSrc;
-  }
+  elements.expandedVisual.dataset.atlasSrc = visual.dataset.atlasSrc || "";
+  elements.expandedVisual.dataset.atlasColumns = visual.dataset.atlasColumns || "2";
+  elements.expandedVisual.dataset.atlasRows = visual.dataset.atlasRows || "1";
+  fitVisualToAtlas(elements.expandedVisual);
   elements.visualDialog.showModal();
 }
 function getAlternativeChoices(exercise) {
@@ -873,6 +889,85 @@ function createExerciseCard(workout, exercise, index) {
   }
   return card;
 }
+
+function incompleteExerciseIndex(workout, afterIndex = -1) {
+  const completion = weekCompletion();
+  for (let offset = 1; offset <= workout.exercises.length; offset += 1) {
+    const index = (afterIndex + offset) % workout.exercises.length;
+    if (!completion[completionKey(workout, workout.exercises[index])]) return index;
+  }
+  return workout.exercises.length;
+}
+
+function renderTrainMode() {
+  if (!trainWorkout) return;
+  const total = trainWorkout.exercises.length;
+  const completion = weekCompletion();
+  const done = trainWorkout.exercises.filter((exercise) => completion[completionKey(trainWorkout, exercise)]).length;
+  const complete = trainExerciseIndex >= total;
+  const day = dayDefinitions.find((item) => item.id === trainWorkout.dayId);
+
+  elements.trainDayLabel.textContent = `${day?.label || "Workout"} · ${trainWorkout.title}`;
+  elements.trainProgressText.textContent = complete ? `${total} of ${total} complete` : `Exercise ${trainExerciseIndex + 1} of ${total}`;
+  elements.trainProgressBar.style.width = `${complete ? 100 : Math.round(done / total * 100)}%`;
+  elements.trainExerciseView.hidden = complete;
+  elements.trainCompleteState.hidden = !complete;
+
+  if (complete) {
+    elements.trainCompleteText.textContent = `All ${total} exercises are marked done. Your progress is saved on this device.`;
+    return;
+  }
+
+  const exercise = trainWorkout.exercises[trainExerciseIndex];
+  const visual = createMovementVisual(
+    trainWorkout,
+    exercise,
+    exercise.visualIndex ?? trainExerciseIndex,
+    exercise.visualProfile,
+    "train-movement-visual",
+  );
+  fitVisualToAtlas(visual);
+  elements.trainVisualHost.replaceChildren(visual);
+  elements.trainEquipment.textContent = exercise.profileLabel || equipmentProfiles[exercise.profileId]?.label || equipmentProfiles[state.equipmentProfile].label;
+  elements.trainExerciseName.textContent = exercise.name;
+  elements.trainTarget.textContent = [exercise.target, exercise.secondary].filter(Boolean).join(" · ");
+  elements.trainSets.textContent = exercise.sets || "—";
+  elements.trainReps.textContent = exercise.reps || "—";
+  elements.trainRest.textContent = exercise.rest || "—";
+  elements.trainTempo.textContent = exercise.tempo || "Controlled";
+  const remainingAfterThis = trainWorkout.exercises.filter((item, index) => (
+    index !== trainExerciseIndex && !completion[completionKey(trainWorkout, item)]
+  )).length;
+  elements.trainDoneButton.textContent = remainingAfterThis ? "Done · Next exercise" : "Done · Finish workout";
+}
+
+function openTrainMode() {
+  const workout = getSchedule().find((day) => day.dayId === selectedDayId);
+  if (!workout || workout.isRest || !workout.exercises.length) return;
+  trainWorkout = workout;
+  trainExerciseIndex = incompleteExerciseIndex(trainWorkout);
+  renderTrainMode();
+  document.body.classList.add("train-mode-open");
+  elements.trainDialog.showModal();
+}
+
+function closeTrainMode() {
+  if (elements.trainDialog.open) elements.trainDialog.close();
+  document.body.classList.remove("train-mode-open");
+  trainWorkout = null;
+}
+
+function completeCurrentTrainExercise() {
+  if (!trainWorkout || trainExerciseIndex >= trainWorkout.exercises.length) return;
+  const exercise = trainWorkout.exercises[trainExerciseIndex];
+  weekCompletion()[completionKey(trainWorkout, exercise)] = true;
+  saveState();
+  trainExerciseIndex = incompleteExerciseIndex(trainWorkout, trainExerciseIndex);
+  renderWorkout();
+  renderProgress();
+  renderTrainMode();
+}
+
 function renderWorkout() {
   const workout = getSchedule().find((day) => day.dayId === selectedDayId); const day = dayDefinitions.find((item) => item.id === selectedDayId);
   elements.workoutHero.hidden = workout.isRest; elements.workoutDetails.hidden = workout.isRest; elements.restState.hidden = !workout.isRest;
@@ -880,6 +975,10 @@ function renderWorkout() {
   elements.selectedDayLabel.textContent = `${day.label} · Workout ${workout.sequence} · ${equipmentProfiles[state.equipmentProfile].short}`; elements.workoutDuration.textContent = workout.duration;
   elements.workoutTitle.textContent = workout.title; elements.workoutFocus.textContent = workout.focus;
   elements.exerciseCount.textContent = `${workout.exercises.length} exercises`;
+  const completion = weekCompletion();
+  const completedExercises = workout.exercises.filter((exercise) => completion[completionKey(workout, exercise)]).length;
+  elements.trainButtonLabel.textContent = completedExercises === workout.exercises.length
+    ? "Review workout" : completedExercises ? "Resume workout" : "Start workout";
   renderTextList(elements.warmupList, workout.warmup); renderTextList(elements.notesList, workout.notes);
   elements.exerciseList.replaceChildren(...workout.exercises.map((exercise, index) => createExerciseCard(workout, exercise, index)));
 }
@@ -916,6 +1015,22 @@ elements.exerciseList.addEventListener("keydown", (event) => {
   if (!visual || (event.key !== "Enter" && event.key !== " ")) return;
   event.preventDefault(); openVisualDialog(visual);
 });
+elements.startTrainMode.addEventListener("click", openTrainMode);
+elements.trainDoneButton.addEventListener("click", completeCurrentTrainExercise);
+[elements.exitTrainMode, elements.trainExitButton, elements.trainCompleteExit].forEach((button) => {
+  button.addEventListener("click", closeTrainMode);
+});
+elements.trainVisualHost.addEventListener("click", (event) => {
+  const visual = event.target.closest(".train-movement-visual");
+  if (visual) openVisualDialog(visual);
+});
+elements.trainVisualHost.addEventListener("keydown", (event) => {
+  const visual = event.target.closest(".train-movement-visual");
+  if (!visual || (event.key !== "Enter" && event.key !== " ")) return;
+  event.preventDefault(); openVisualDialog(visual);
+});
+elements.trainDialog.addEventListener("close", () => { document.body.classList.remove("train-mode-open"); trainWorkout = null; });
+elements.trainDialog.addEventListener("click", (event) => { if (event.target === elements.trainDialog) closeTrainMode(); });
 elements.closeVisualDialog.addEventListener("click", () => elements.visualDialog.close());
 elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
 elements.equipmentProfile.addEventListener("change", () => {
@@ -939,5 +1054,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=13"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=14"));
 renderAll();
