@@ -1,14 +1,14 @@
 const STORAGE_KEY = "gym-schedule-v5";
 const LEGACY_STORAGE_KEYS = ["gym-schedule-v4", "gym-schedule-v3"];
-const PROGRAM_VERSION = 2;
+const PROGRAM_VERSION = 3;
 const MUSCLE_IMAGE = "./assets/muscle-anatomy.png";
 const exerciseAtlases = {
   best: {
-    "legs-full": { src: "./assets/exercises-legs.png", rows: 3 },
-    "chest-triceps": { src: "./assets/exercises-chest-triceps.png", rows: 3 },
-    back: { src: "./assets/exercises-back-v2.png", rows: 3, layout: "wide" },
-    "shoulders-core": { src: "./assets/exercises-shoulders-core.png", rows: 4 },
-    "arms-chest-accessory": { src: "./assets/exercises-arms-chest-v2.png", rows: 3, layout: "wide" },
+    "legs-full": { src: "./assets/best-mix-legs-v1.png", rows: 4, layout: "wide" },
+    "chest-triceps": { src: "./assets/best-mix-chest-triceps-v1.png", rows: 3, layout: "wide" },
+    back: { src: "./assets/best-mix-back-v1.png", rows: 3, layout: "wide" },
+    "shoulders-core": { src: "./assets/best-mix-shoulders-core-v1.png", rows: 3, layout: "wide" },
+    "arms-chest-accessory": { src: "./assets/best-mix-arms-chest-v1.png", rows: 3, layout: "wide" },
   },
   machine: {
     "legs-full": { src: "./assets/equipment-machine-legs-v1.png", rows: 3, layout: "wide" },
@@ -178,6 +178,116 @@ const programWorkouts = [
   },
 ];
 
+const bestMixProgramWorkouts = [
+  {
+    id: "legs-full", title: "Legs — full", focus: "Complete quads, glutes, hamstrings, adductors and calves", duration: "75–90 min",
+    warmup: [
+      "5 min bike.", "Hip circles — 10 reps per side.", "Leg swings — 10 reps per side.",
+      "Bodyweight goblet squat — 10 reps.", "Squat warm-up sets: 50% × 8, then 70% × 5.",
+    ],
+    exercises: [
+      e("back-squat", "Barbell Back Squat", "4", "6–8", "3 min", "Controlled", "Quads", "Glutes, hamstrings", ["quads", "glutes", "hamstrings"], { alternativeVisualIndex: 0 }),
+      e("romanian-deadlift", "Romanian Deadlift", "4", "8–10", "2.5 min", "3 sec down", "Hamstrings", "Glutes", ["hamstrings", "glutes", "lower-back"], { alternativeVisualIndex: 1 }),
+      e("leg-press", "Leg Press (feet low/narrow)", "3", "10–12", "2 min", "Controlled", "Quads", "VMO / teardrop", ["quads", "glutes"], { alternativeVisualIndex: 3 }),
+      e("hip-thrust", "Hip Thrust", "3", "12–15", "90 sec", "Squeeze 1 sec at top", "Glutes", "Hamstrings", ["glutes", "hamstrings"]),
+      e("leg-curl", "Lying Leg Curl", "3", "12–15", "90 sec", "3 sec down", "Hamstrings", "Knee-flexion emphasis", ["hamstrings"], { alternativeVisualIndex: 4 }),
+      e("hip-adductor", "Hip Adductor Machine", "3", "15–20", "60 sec", "Slow squeeze", "Inner thighs", "Adductors", ["adductors"]),
+      e("calf-raise-superset", "Calf Raise Superset ★", "4", "15–20 each", "60 sec", "2 sec down, pause at top", "Calves", "Gastrocnemius, soleus", ["calves"], { primaryLabel: "Calf superset" }),
+    ],
+    notes: [
+      "Calf superset: perform 15–20 standing calf raises, immediately perform 15–20 seated calf raises, then rest 60 seconds. Do not rest between the two movements.",
+      "Squat: use the deepest comfortable range you can control and keep knees tracking over the toes.",
+      "Romanian deadlift: hinge at the hips and never round the lower back.",
+      "Hip thrust: drive through the heels and finish by squeezing the glutes rather than arching the back.",
+      "Leg curl: control the full 3-second lowering phase. Calf raises: use a full stretch without bouncing.",
+    ],
+  },
+  {
+    id: "chest-triceps", title: "Chest + triceps", focus: "Heavy pressing with complete chest and triceps coverage", duration: "65–80 min",
+    warmup: [
+      "Band pull-aparts — 15 reps.", "Arm circles — 10 reps per direction.", "Flat-bench warm-up sets: 50% × 8, then 70% × 5.",
+    ],
+    exercises: [
+      e("incline-db-press", "Incline Barbell Press", "4", "6–8", "3 min", "2 sec down, explosive up", "Upper chest", "Triceps, front delts", ["chest", "triceps", "shoulders"], { alternativeVisualIndex: 1 }),
+      e("bench-press", "Flat Dumbbell Press", "3", "8–10", "2 min", "2 sec down, full stretch", "Mid chest", "Triceps, deeper stretch", ["chest", "triceps"], { alternativeVisualIndex: 0 }),
+      e("weighted-dips", "Weighted Dips ★ (lean 15–20°)", "3", "8–12", "2 min", "Controlled", "Lower chest", "Triceps", ["chest", "triceps"]),
+      e("cable-fly", "Cable Fly (low-mid angle)", "3", "12–15", "60 sec", "2 sec stretch, squeeze at top", "Inner chest line", "Front delts", ["chest"], { alternativeVisualIndex: 2 }),
+      e("overhead-triceps", "Cable Overhead Extension", "3", "10–12", "90 sec", "3 sec down", "Triceps long head", "Forearms", ["triceps"], { alternativeVisualIndex: 3 }),
+      e("rope-pushdown", "Rope Pushdown", "3", "12–15", "60 sec", "Squeeze at bottom", "Triceps lateral head", "Forearms", ["triceps"], { alternativeVisualIndex: 4 }),
+    ],
+    notes: [
+      "Coverage: incline press targets upper chest, flat dumbbell press targets mid chest, weighted dips target lower chest, and the cable fly finishes the chest through adduction.",
+      "Keep pressing elbows roughly 45–75° from the torso rather than flared to 90°.",
+      "For chest-biased dips, lean forward. A decline barbell press is the listed replacement when dips are unavailable or uncomfortable.",
+      "Keep a soft elbow bend during cable flyes and never force the shoulder into a painful stretch.",
+      "The overhead extension emphasizes the long head; the pushdown emphasizes the lateral head. Use the prescribed controlled lowering phases.",
+    ],
+  },
+  {
+    id: "back", title: "Back", focus: "Lat width, back thickness, lower back, traps and rear delts", duration: "70–85 min",
+    warmup: [
+      "Band pull-aparts — 10 reps.", "Cat-cow — 10 reps.", "Bodyweight scapular pull-ups — 10 reps.",
+      "Row warm-up sets: 50% × 8, then 70% × 5.",
+    ],
+    exercises: [
+      e("bent-over-barbell-row", "Bent-Over Barbell Row", "4", "8–10", "2.5 min", "3 sec down, row to lower chest", "Mid back", "Lats, thickness", ["upper-back", "lats", "biceps"]),
+      e("pull-up-pulldown", "Pull-Up / Lat Pulldown", "4", "8–10", "2.5 min", "2 sec down, full stretch", "Lats", "Back width, V-taper", ["lats", "biceps"], { alternativeVisualIndex: 0 }),
+      e("chest-supported-machine-row", "Chest-Supported Machine Row ★", "3", "10–12", "2 min", "Controlled", "Full back", "Minimal spinal loading", ["upper-back", "lats"]),
+      e("hyperextension-machine", "Hyperextension Machine", "3", "12–15", "90 sec", "Controlled", "Lower back", "Spinal erectors, glutes", ["lower-back", "glutes"]),
+      e("seated-cable-row", "Seated Cable Row", "3", "12–15", "90 sec", "2 sec stretch, squeeze back", "Rhomboids", "Lower traps", ["upper-back", "lats"]),
+      e("reverse-fly", "Reverse Pec Deck Machine", "2", "15–20", "60 sec", "Slow and controlled", "Rear delts", "Shoulder health", ["shoulders", "upper-back"], { alternativeVisualIndex: 4 }),
+    ],
+    notes: [
+      "Coverage: pull-ups or pulldowns build lat width; barbell, machine and cable rows cover thickness and mid-back; hyperextensions train the lower back; reverse pec deck trains rear delts.",
+      "Bent-over row: use roughly a 45° hip hinge, brace the core and avoid momentum.",
+      "Pull-up: reach a controlled dead hang at the bottom and pull the chin over the bar without swinging.",
+      "Seated row: allow a controlled forward stretch before rowing. Keep reverse pec-deck work light because rear delts are trained again on the next workout.",
+      "Optional progression: when ready for conventional deadlifts, replace the chest-supported machine row, place the deadlift first and move the bent-over row to second. Start light and learn the hip hinge before adding load.",
+    ],
+  },
+  {
+    id: "shoulders-core", title: "Shoulders + core", focus: "Side and rear delts, upper traps and complete core work", duration: "50–65 min",
+    warmup: [
+      "Band pull-aparts — 15 reps.", "Arm circles — 10 reps per direction.", "Shoulder CARs — 10 slow, full-range reps per side.",
+    ],
+    exercises: [
+      e("cable-lateral-raise", "DB Lateral Raise → Cable Lateral Raise ★", "4", "12–15 each", "90 sec", "Slow, no swinging", "Side delts", "Shoulder width", ["shoulders"], { primaryLabel: "Primary superset", alternativeVisualIndex: 1 }),
+      e("rear-delt-fly", "Reverse Pec Deck Machine", "3", "15–20", "60 sec", "Squeeze, 2 sec return", "Rear delts", "3D shoulder roundness", ["shoulders", "upper-back"], { alternativeVisualIndex: 2 }),
+      e("dumbbell-shrug", "Dumbbell Shrug", "3", "15–20", "60 sec", "Hold 1 sec at top", "Upper traps", "Levator scapulae", ["upper-back"], { alternativeVisualIndex: 5, alternativeWorkoutId: "back" }),
+      e("cable-crunch", "Cable Crunch", "3", "15–20", "60 sec", "Controlled", "Rectus abdominis", "Deep core", ["core"]),
+      e("hanging-leg-raise", "Hanging Leg Raise", "3", "12–15", "60 sec", "Controlled", "Lower abs", "Hip flexors", ["core"]),
+      e("weighted-russian-twist", "Russian Twist (weighted)", "3", "20 / side", "60 sec", "Controlled", "Obliques", "Deep core", ["core"]),
+    ],
+    notes: [
+      "Lateral-raise superset: perform 12–15 dumbbell lateral raises, immediately perform 12–15 cable lateral raises, then rest 90 seconds. Dumbbells load the bottom differently; cables maintain tension through more of the range.",
+      "Lead lateral raises with the elbows, stop near shoulder height and do not swing.",
+      "Shrug straight up and down without rolling the shoulders. During cable crunches, move through the abs rather than pulling with the arms.",
+      "No overhead press in this Best Mix session: front delts were loaded heavily during chest training, while this day prioritizes side and rear delts before they receive indirect work again on day five.",
+    ],
+  },
+  {
+    id: "arms-chest-accessory", title: "Arms + chest accessory", focus: "Fresh biceps, complete triceps and a small chest maintenance stimulus", duration: "60–75 min",
+    warmup: [
+      "Arm circles — 10 reps per direction.", "Bodyweight curls — 10 controlled reps.", "Band triceps pushdowns — 10 reps.",
+    ],
+    exercises: [
+      e("ez-bar-curl", "EZ Bar Curl", "4", "8–10", "2 min", "3 sec down, explosive up", "Biceps — both heads", "Overall biceps mass", ["biceps"], { primaryLabel: "Primary biceps lift", alternativeVisualIndex: 2 }),
+      e("incline-curl", "Incline Dumbbell Curl", "3", "10–12", "90 sec", "3 sec down, stop at 90°", "Biceps long head", "Peak emphasis", ["biceps"], { alternativeVisualIndex: 3 }),
+      e("hammer-curl", "Hammer Curl", "3", "12–15", "90 sec", "Controlled", "Brachialis", "Forearm thickness", ["biceps"]),
+      e("close-grip-bench", "Close-Grip Bench Press", "3", "8–10", "2 min", "2 sec down, elbows tucked", "Triceps", "Overall triceps mass, chest", ["triceps", "chest"], { alternativeVisualIndex: 0 }),
+      e("cable-pushdown", "Rope Pushdown", "3", "12–15", "60 sec", "Squeeze at bottom", "Triceps lateral head", "Horseshoe emphasis", ["triceps"], { alternativeVisualIndex: 4 }),
+      e("low-high-fly", "Cable Fly", "2", "15", "60 sec", "2 sec stretch, squeeze at top", "Chest", "Pump and maintenance stimulus", ["chest"], { alternativeVisualIndex: 1 }),
+    ],
+    notes: [
+      "Coverage: EZ-bar curls train overall biceps mass, incline curls emphasize the long head, and hammer curls add brachialis and forearm thickness.",
+      "Keep the elbows pinned during EZ-bar curls without swinging. On incline curls, keep the stretch controlled and stop near 90° as prescribed.",
+      "Keep a neutral wrist during hammer curls. On close-grip bench press, use roughly shoulder-width hands and keep elbows near 45° rather than forcing an extremely narrow grip.",
+      "The cable fly is only a two-set chest refresher; it is not another full chest session.",
+      "Weekend recovery: prioritize sleep and full rest. Light walking and comfortable mobility work are fine; avoid adding unnecessary muscle-damaging sessions.",
+    ],
+  },
+];
+
 const equipmentVariants = {
   "back-squat": {
     machine: { name: "Hack squat machine" },
@@ -329,6 +439,46 @@ const equipmentVariants = {
     dumbbell: { name: "Seated dumbbell overhead extension" },
     barbell: { name: "EZ-bar skull crusher" },
   },
+  "calf-raise-superset": {
+    machine: { name: "Standing + seated calf-raise machines", visualIndex: 5 },
+    dumbbell: { name: "Standing + seated dumbbell calf raises", visualIndex: 5 },
+    barbell: { name: "Standing barbell calf raise", visualIndex: 5 },
+  },
+  "weighted-dips": {
+    machine: { name: "Seated triceps-dip machine", visualIndex: 4 },
+    dumbbell: { name: "Neutral-grip dumbbell bench press", visualIndex: 0 },
+    barbell: { name: "Decline barbell bench press", visualIndex: 0 },
+  },
+  "bent-over-barbell-row": {
+    machine: { name: "Chest-supported row machine", visualIndex: 1 },
+    dumbbell: { name: "Bench-supported one-arm dumbbell row", visualIndex: 0 },
+    barbell: { name: "Bent-over barbell row", visualIndex: 0 },
+  },
+  "chest-supported-machine-row": {
+    machine: { name: "Chest-supported row machine", visualIndex: 1 },
+    dumbbell: { name: "Bench-supported one-arm dumbbell row", visualIndex: 0 },
+    barbell: { name: "Bent-over barbell row", visualIndex: 0 },
+  },
+  "hyperextension-machine": {
+    machine: { name: "Seated back-extension machine", visualIndex: 2 },
+    dumbbell: { name: "Dumbbell-loaded 45-degree back extension", visualIndex: 2 },
+    barbell: { name: "Barbell good morning", visualIndex: 2 },
+  },
+  "seated-cable-row": {
+    machine: { name: "Seated row machine", visualIndex: 1 },
+    dumbbell: { name: "Bench-supported one-arm dumbbell row", visualIndex: 0 },
+    barbell: { name: "Bent-over barbell row", visualIndex: 0 },
+  },
+  "cable-crunch": {
+    machine: { name: "Ab-crunch machine", visualIndex: 4 },
+  },
+  "hanging-leg-raise": {
+    machine: { name: "Captain’s-chair knee raise", visualIndex: 6 },
+  },
+  "weighted-russian-twist": {
+    machine: { name: "Rotary-torso machine", visualIndex: 5 },
+    barbell: { name: "Landmine barbell rotation", visualIndex: 5 },
+  },
 };
 
 const exerciseAlternatives = {
@@ -458,14 +608,14 @@ const markerPositions = {
   chest: [[24, 24], [35, 24]], shoulders: [[16, 21], [42, 21], [61, 22], [89, 22]],
   triceps: [[61, 34], [90, 34]], biceps: [[15, 32], [43, 32]], lats: [[69, 36], [82, 36]],
   "upper-back": [[75, 27]], "lower-back": [[75, 43]], core: [[29, 38]], quads: [[23, 62], [36, 62]],
-  hamstrings: [[69, 65], [81, 65]], glutes: [[69, 52], [81, 52]], calves: [[69, 79], [81, 79]],
+  adductors: [[27, 64], [32, 64]], hamstrings: [[69, 65], [81, 65]], glutes: [[69, 52], [81, 52]], calves: [[69, 79], [81, 79]],
 };
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultState = () => ({
   profileName: "", equipmentProfile: "best", startDayId: "monday",
   trainingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
-  programVersion: PROGRAM_VERSION, workouts: clone(programWorkouts), completions: {},
+  programVersion: PROGRAM_VERSION, workouts: clone(programWorkouts), bestMixWorkouts: clone(bestMixProgramWorkouts), completions: {},
 });
 
 function loadState() {
@@ -485,10 +635,13 @@ function loadState() {
       trainingDays,
       programVersion: PROGRAM_VERSION,
       workouts: Array.isArray(stored.workouts) ? programWorkouts.map((template) => {
-        if (needsProgramUpdate && template.id === "arms-chest-accessory") return clone(template);
         const saved = stored.workouts.find((workout) => workout.id === template.id);
         return saved ? { ...clone(template), ...saved } : clone(template);
       }) : clone(programWorkouts),
+      bestMixWorkouts: !needsProgramUpdate && Array.isArray(stored.bestMixWorkouts) ? bestMixProgramWorkouts.map((template) => {
+        const saved = stored.bestMixWorkouts.find((workout) => workout.id === template.id);
+        return saved ? { ...clone(template), ...saved } : clone(template);
+      }) : clone(bestMixProgramWorkouts),
       completions: stored.completions && typeof stored.completions === "object" ? stored.completions : {},
     };
   } catch { return defaultState(); }
@@ -545,8 +698,9 @@ function resolveExerciseVariant(exercise, slotIndex, profileId = state.equipment
 }
 function getSchedule() {
   const assigned = new Map();
+  const activeWorkouts = state.equipmentProfile === "best" ? state.bestMixWorkouts : state.workouts;
   orderedTrainingDays().forEach((dayId, index) => {
-    const workout = state.workouts[index];
+    const workout = activeWorkouts[index];
     const exercises = workout.exercises
       .map((exercise, slotIndex) => resolveExerciseVariant(exercise, slotIndex))
       .filter(Boolean);
@@ -599,7 +753,7 @@ function createMuscleMap(exercise) {
   return map;
 }
 function createMovementVisual(workout, exercise, index, profileId = exercise.visualProfile, className = "movement-visual") {
-  const atlas = exerciseAtlases[profileId]?.[workout.workoutId];
+  const atlas = exerciseAtlases[profileId]?.[exercise.visualWorkoutId || workout.workoutId];
   const visual = makeElement("div", className);
   visual.setAttribute("role", "img");
   visual.setAttribute("aria-label", `${exercise.name} visual reference`);
@@ -632,6 +786,8 @@ function getAlternativeChoices(exercise) {
       profileId,
       label: equipmentProfiles[profileId].label,
       visualProfile: equipmentProfiles[profileId].visualProfile,
+      visualIndex: variant.visualIndex ?? exercise.alternativeVisualIndex ?? exercise.visualIndex,
+      visualWorkoutId: variant.visualWorkoutId ?? exercise.alternativeWorkoutId,
     }];
   });
 }
@@ -669,8 +825,8 @@ function createExerciseCard(workout, exercise, index) {
     const list = makeElement("ul", "alternative-options");
     alternatives.forEach((alternative) => {
       const item = makeElement("li", "alternative-option");
-      const altExercise = { name: alternative.name };
-      const visual = createMovementVisual(workout, altExercise, exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
+      const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId };
+      const visual = createMovementVisual(workout, altExercise, alternative.visualIndex ?? exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
       const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name));
       item.append(visual, text); list.append(item);
     });
@@ -714,7 +870,8 @@ function addEditorRow(exercise = {}) {
 }
 function openEditDialog() {
   const scheduled = getSchedule().find((day) => day.dayId === selectedDayId); if (scheduled.isRest) return;
-  const workout = state.workouts.find((item) => item.id === scheduled.workoutId); elements.editDayLabel.textContent = `Workout ${scheduled.sequence}`;
+  const activeWorkouts = state.equipmentProfile === "best" ? state.bestMixWorkouts : state.workouts;
+  const workout = activeWorkouts.find((item) => item.id === scheduled.workoutId); elements.editDayLabel.textContent = `Workout ${scheduled.sequence}`;
   elements.editTitle.value = workout.title; elements.editFocus.value = workout.focus; elements.exerciseEditor.replaceChildren();
   workout.exercises.forEach(addEditorRow); elements.editDialog.showModal();
 }
@@ -756,10 +913,13 @@ elements.addExercise.addEventListener("click", () => { addEditorRow(); elements.
 elements.exerciseEditor.addEventListener("click", (event) => { const button = event.target.closest(".remove-exercise"); if (button) button.closest(".editor-row").remove(); });
 elements.editForm.addEventListener("submit", (event) => {
   if (event.submitter?.value === "cancel") return; event.preventDefault(); if (!elements.editForm.reportValidity()) return;
-  const scheduled = getSchedule().find((day) => day.dayId === selectedDayId); const workout = state.workouts.find((item) => item.id === scheduled.workoutId);
+  const scheduled = getSchedule().find((day) => day.dayId === selectedDayId); const activeWorkouts = state.equipmentProfile === "best" ? state.bestMixWorkouts : state.workouts;
+  const workout = activeWorkouts.find((item) => item.id === scheduled.workoutId);
   workout.title = elements.editTitle.value.trim(); workout.focus = elements.editFocus.value.trim();
   workout.exercises = Array.from(elements.exerciseEditor.querySelectorAll(".editor-row")).map((row) => {
-    const name = row.querySelector(".exercise-name-input").value.trim(); return {
+    const name = row.querySelector(".exercise-name-input").value.trim();
+    const previous = workout.exercises.find((exercise) => exercise.id === row.dataset.exerciseId) || {};
+    return { ...previous,
       id: row.dataset.exerciseId || makeId(name), name, sets: row.querySelector(".sets-input").value.trim(), reps: row.querySelector(".reps-input").value.trim(),
       rest: row.querySelector(".rest-input").value.trim(), tempo: row.querySelector(".tempo-input").value.trim(), target: row.querySelector(".target-input").value.trim(),
       secondary: row.querySelector(".secondary-input").value.trim(), regions: [row.querySelector(".region-input").value],
@@ -769,5 +929,5 @@ elements.editForm.addEventListener("submit", (event) => {
 });
 [elements.settingsDialog, elements.editDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=9"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=10"));
 renderAll();
