@@ -63,8 +63,15 @@ main { padding: 22px 0 52px; }
 .library-grid { display: grid; gap: 10px; }
 .library-exercise-card { border: 1px solid var(--line); border-radius: 17px; background: var(--panel-soft); overflow: hidden; }
 .library-exercise-visual { position: relative; width: 100%; min-height: 170px; aspect-ratio: 3 / 2; border: 0; background-color: #242938; background-repeat: no-repeat; cursor: zoom-in; overflow: hidden; }
-.library-exercise-visual::after { position: absolute; top: 8px; right: 8px; display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; color: white; background: rgba(3,6,11,.72); content: "↗"; font-size: .72rem; font-weight: 900; }
-.library-exercise-visual.is-animated-guide::before { position: absolute; z-index: 1; right: 8px; bottom: 8px; padding: 4px 7px; border-radius: 999px; color: white; background: rgba(3,6,11,.75); content: "Motion guide"; font-size: .49rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+.library-exercise-visual::after { position: absolute; z-index: 2; top: 8px; right: 8px; display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; color: white; background: rgba(3,6,11,.72); content: "↗"; font-size: .72rem; font-weight: 900; }
+.library-exercise-visual.is-animated-guide::before, .library-exercise-visual.has-motion-guide::before { position: absolute; z-index: 2; right: 8px; bottom: 8px; padding: 4px 7px; border-radius: 999px; color: white; background: rgba(3,6,11,.75); content: "Motion guide"; font-size: .49rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+.motion-guide-layer { position: absolute; z-index: 1; inset: 0; background: #202638; pointer-events: none; }
+.motion-guide-frame { position: absolute; inset: 0; background-position: center; background-repeat: no-repeat; background-size: contain; }
+.motion-guide-finish { opacity: 0; animation: motion-guide-frames 3.2s steps(1, end) infinite; }
+@keyframes motion-guide-frames {
+  0%, 49.99%, 100% { opacity: 0; }
+  50%, 99.99% { opacity: 1; }
+}
 .is-animated-guide { animation: exercise-motion-guide 3.2s linear infinite; }
 @keyframes exercise-motion-guide {
   0%, 49.99%, 100% { background-position: 0% 50%; }
@@ -91,7 +98,7 @@ footer a { color: var(--accent-bright); font-weight: 800; text-decoration: none;
 .dialog-copy { padding: 3px 48px 14px 2px; }
 .dialog-copy p { margin-bottom: 4px; color: var(--lime); font-size: .57rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
 .dialog-copy h2 { margin: 0; font-size: clamp(1.2rem,6vw,1.75rem); letter-spacing: -.04em; }
-.library-expanded-visual { width: 100%; min-height: 190px; border: 1px solid var(--line); border-radius: 17px; background-color: #202638; background-repeat: no-repeat; box-shadow: 0 16px 40px rgba(0,0,0,.35); }
+.library-expanded-visual { position: relative; width: 100%; min-height: 190px; border: 1px solid var(--line); border-radius: 17px; background-color: #202638; background-repeat: no-repeat; box-shadow: 0 16px 40px rgba(0,0,0,.35); overflow: hidden; }
 .dialog-note { margin: 13px 3px 1px; color: var(--muted); font-size: .7rem; line-height: 1.5; }
 
 @media (min-width: 660px) {

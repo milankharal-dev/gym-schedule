@@ -618,6 +618,7 @@ const markerPositions = {
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const defaultState = () => ({
   profileName: "", equipmentProfile: "best", startDayId: "monday",
+  showMotionGuides: false,
   trainingDays: ["monday", "tuesday", "wednesday", "thursday", "friday"],
   programVersion: PROGRAM_VERSION, workouts: clone(programWorkouts), bestMixWorkouts: clone(bestMixProgramWorkouts), completions: {}, trainChoices: {},
 });
@@ -635,6 +636,7 @@ function loadState() {
     return {
       profileName: typeof stored.profileName === "string" ? stored.profileName : "",
       equipmentProfile: equipmentProfiles[stored.equipmentProfile] ? stored.equipmentProfile : "best",
+      showMotionGuides: stored.showMotionGuides === true,
       startDayId: trainingDays.includes(stored.startDayId) ? stored.startDayId : trainingDays[0],
       trainingDays,
       programVersion: PROGRAM_VERSION,
@@ -670,6 +672,7 @@ const elements = {
   restState: $("#restState"), openSettings: $("#openSettings"),
   openScheduleSettings: $("#openScheduleSettings"), settingsDialog: $("#settingsDialog"), settingsForm: $("#settingsForm"),
   profileName: $("#profileName"), equipmentProfile: $("#equipmentProfile"), equipmentProfileHelp: $("#equipmentProfileHelp"),
+  showMotionGuides: $("#showMotionGuides"),
   startDay: $("#startDay"), scheduleError: $("#scheduleError"), resetData: $("#resetData"),
   saveStatus: $("#saveStatus"), visualDialog: $("#visualDialog"),
   expandedVisual: $("#expandedVisual"), visualDialogTitle: $("#visualDialogTitle"), visualDialogProfile: $("#visualDialogProfile"),
@@ -772,8 +775,29 @@ function createMuscleMap(exercise) {
   map.append(makeElement("span", "visual-label", "Target"));
   return map;
 }
+function getMotionGuide(exerciseName) {
+  if (!state.showMotionGuides) return null;
+  return globalThis.motionGuideCatalog?.resolve(exerciseName) || null;
+}
+function appendMotionGuide(node, guide) {
+  if (!guide) return;
+  node.classList.add("has-motion-guide");
+  node.dataset.motionStart = guide.start;
+  node.dataset.motionFinish = guide.finish;
+  const layer = makeElement("span", "motion-guide-layer");
+  layer.setAttribute("aria-hidden", "true");
+  const start = makeElement("span", "motion-guide-frame motion-guide-start");
+  const finish = makeElement("span", "motion-guide-frame motion-guide-finish");
+  start.style.backgroundImage = `url("${guide.start}")`;
+  finish.style.backgroundImage = `url("${guide.finish}")`;
+  layer.append(start, finish);
+  node.prepend(layer);
+}
 function createMovementVisual(workout, exercise, index, profileId = exercise.visualProfile, className = "movement-visual") {
-  const atlas = exerciseAtlases[profileId]?.[exercise.visualWorkoutId || workout.workoutId];
+  const configuredAtlas = exerciseAtlases[profileId]?.[exercise.visualWorkoutId || workout.workoutId];
+  const atlas = state.showMotionGuides && /face pull/i.test(exercise.name)
+    ? exerciseAtlases.machine["machine-face-pull"]
+    : configuredAtlas;
   const visual = makeElement("div", className);
   visual.setAttribute("role", "button");
   visual.setAttribute("tabindex", "0");
@@ -796,12 +820,15 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
     visual.dataset.atlasColumns = String(columns);
     visual.dataset.atlasRows = String(atlas.rows);
     if (atlas.displayAspect) visual.dataset.displayAspect = atlas.displayAspect;
-    if (atlas.animated) {
+    if (atlas.animated && state.showMotionGuides) {
       visual.dataset.animated = "true";
       visual.classList.add("is-animated-guide");
     }
   }
-  if (className === "movement-visual" || atlas?.animated) visual.append(makeElement("span", "visual-label", atlas?.animated ? "Motion guide" : "Movement"));
+  const guide = atlas?.animated ? null : getMotionGuide(exercise.name);
+  appendMotionGuide(visual, guide);
+  const hasMotion = visual.classList.contains("is-animated-guide") || Boolean(guide);
+  if (className === "movement-visual" || hasMotion) visual.append(makeElement("span", "visual-label", hasMotion ? "Motion guide" : "Movement"));
   const expandHint = makeElement("span", "expand-visual-hint", "↗");
   expandHint.setAttribute("aria-hidden", "true");
   visual.append(expandHint);
@@ -837,6 +864,13 @@ function openVisualDialog(visual) {
   elements.expandedVisual.dataset.atlasRows = visual.dataset.atlasRows || "1";
   elements.expandedVisual.dataset.displayAspect = visual.dataset.displayAspect || "";
   elements.expandedVisual.classList.toggle("is-animated-guide", visual.dataset.animated === "true");
+  elements.expandedVisual.querySelector(".motion-guide-layer")?.remove();
+  elements.expandedVisual.classList.remove("has-motion-guide");
+  delete elements.expandedVisual.dataset.motionStart;
+  delete elements.expandedVisual.dataset.motionFinish;
+  if (visual.dataset.motionStart && visual.dataset.motionFinish) {
+    appendMotionGuide(elements.expandedVisual, { start: visual.dataset.motionStart, finish: visual.dataset.motionFinish });
+  }
   fitVisualToAtlas(elements.expandedVisual);
   elements.visualDialog.showModal();
 }
@@ -1092,7 +1126,8 @@ function renderEquipmentProfile() {
   elements.equipmentProfile.value = state.equipmentProfile;
   elements.equipmentProfileHelp.textContent = `${profile.description} Changes apply instantly.`;
 }
-function renderAll() { renderHeader(); renderTabs(); renderEquipmentProfile(); renderWorkout(); renderProgress(); }
+function renderMotionSetting() { elements.showMotionGuides.checked = state.showMotionGuides; }
+function renderAll() { renderHeader(); renderTabs(); renderEquipmentProfile(); renderMotionSetting(); renderWorkout(); renderProgress(); }
 
 function openSettingsDialog() {
   elements.profileName.value = state.profileName; elements.startDay.value = state.startDayId; elements.scheduleError.textContent = "";
@@ -1150,6 +1185,11 @@ elements.equipmentProfile.addEventListener("change", () => {
   saveState();
   renderAll();
 });
+elements.showMotionGuides.addEventListener("change", () => {
+  state.showMotionGuides = elements.showMotionGuides.checked;
+  saveState();
+  renderAll();
+});
 dayCheckboxes.forEach((checkbox) => checkbox.addEventListener("change", () => {
   const checked = dayCheckboxes.filter((item) => item.checked); if (checked.length > 5) { checkbox.checked = false; elements.scheduleError.textContent = "Choose no more than five training days."; } else { elements.scheduleError.textContent = ""; }
 }));
@@ -1165,5 +1205,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=16"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=18"));
 renderAll();

@@ -153,6 +153,12 @@ const muscleGroups = [
 ];
 
 const equipmentLabels = { machine: "Machine", cable: "Cable", dumbbell: "Dumbbell", barbell: "Barbell", bodyweight: "Bodyweight" };
+function motionGuidesEnabled() {
+  try {
+    return JSON.parse(localStorage.getItem("gym-schedule-v5") || "null")?.showMotionGuides === true;
+  } catch { return false; }
+}
+const showMotionGuides = motionGuidesEnabled();
 const elements = {
   picker: document.querySelector("#musclePicker"), markers: document.querySelector("#libraryMarkers"),
   description: document.querySelector("#selectedMuscleDescription"), title: document.querySelector("#libraryResultsTitle"),
@@ -164,6 +170,17 @@ const elements = {
 };
 
 let selectedMuscleId = "chest";
+
+function appendMotionGuide(node, guide) {
+  if (!guide) return;
+  node.classList.add("has-motion-guide");
+  node.dataset.motionStart = guide.start;
+  node.dataset.motionFinish = guide.finish;
+  const layer = document.createElement("span"); layer.className = "motion-guide-layer"; layer.setAttribute("aria-hidden", "true");
+  const start = document.createElement("span"); start.className = "motion-guide-frame motion-guide-start"; start.style.backgroundImage = `url("${guide.start}")`;
+  const finish = document.createElement("span"); finish.className = "motion-guide-frame motion-guide-finish"; finish.style.backgroundImage = `url("${guide.finish}")`;
+  layer.append(start, finish); node.prepend(layer);
+}
 
 function applyVisual(node, image) {
   const column = image.index % image.columns;
@@ -177,7 +194,7 @@ function applyVisual(node, image) {
   node.dataset.columns = String(image.columns);
   node.dataset.rows = String(image.rows);
   if (image.displayAspect) node.dataset.displayAspect = image.displayAspect;
-  if (image.animated) {
+  if (image.animated && showMotionGuides) {
     node.dataset.animated = "true";
     node.classList.add("is-animated-guide");
   }
@@ -196,6 +213,7 @@ function createExerciseCard(item) {
   const image = document.createElement("div"); image.className = "library-exercise-visual"; image.role = "button"; image.tabIndex = 0;
   image.setAttribute("aria-label", `Expand visual for ${item.name}`); image.dataset.exerciseName = item.name; image.dataset.equipment = equipmentLabels[item.equipment];
   applyVisual(image, item.image);
+  if (showMotionGuides && !item.image.animated) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
   const copy = document.createElement("div"); copy.className = "library-exercise-copy";
   const pill = document.createElement("span"); pill.className = "equipment-pill"; pill.textContent = equipmentLabels[item.equipment];
   const title = document.createElement("h3"); title.textContent = item.name;
@@ -234,6 +252,11 @@ function openVisual(image) {
   elements.expanded.style.backgroundImage = image.style.backgroundImage; elements.expanded.style.backgroundSize = image.style.backgroundSize;
   elements.expanded.style.backgroundPosition = image.style.backgroundPosition; elements.expanded.style.aspectRatio = image.dataset.displayAspect || "3 / 2";
   elements.expanded.classList.toggle("is-animated-guide", image.dataset.animated === "true");
+  elements.expanded.querySelector(".motion-guide-layer")?.remove(); elements.expanded.classList.remove("has-motion-guide");
+  delete elements.expanded.dataset.motionStart; delete elements.expanded.dataset.motionFinish;
+  if (image.dataset.motionStart && image.dataset.motionFinish) {
+    appendMotionGuide(elements.expanded, { start: image.dataset.motionStart, finish: image.dataset.motionFinish });
+  }
   if (image.dataset.displayAspect) { elements.dialog.showModal(); return; }
   const source = new Image(); source.addEventListener("load", () => {
     if (elements.expanded.style.backgroundImage !== image.style.backgroundImage) return;
@@ -254,5 +277,5 @@ elements.grid.addEventListener("keydown", (event) => {
 elements.closeDialog.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=16"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=18"));
 renderExercises();

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=16" />
+    <link rel="stylesheet" href="./styles.css?v=18" />
   </head>
   <body>
     <div class="app-shell">
@@ -64,6 +64,14 @@
               <option value="barbell">Barbells only</option>
               <option value="best">Best mix</option>
             </select>
+          </label>
+          <label class="motion-switcher" for="showMotionGuides">
+            <span>
+              <strong>Show me how</strong>
+              <small>Animate the start and finish positions for every exercise.</small>
+            </span>
+            <input id="showMotionGuides" type="checkbox" />
+            <span class="toggle-track" aria-hidden="true"><span></span></span>
           </label>
         </section>
 
@@ -231,6 +239,7 @@
       <p class="visual-dialog-note">Use this as a movement reference. Follow the written tempo and use a comfortable, controlled range.</p>
     </dialog>
 
-    <script src="./app.js?v=16" defer></script>
+    <script src="./motion-guides.js?v=1" defer></script>
+    <script src="./app.js?v=18" defer></script>
   </body>
 </html>
