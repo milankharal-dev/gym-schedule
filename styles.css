@@ -134,6 +134,11 @@ main { padding: 30px 0 52px; }
 .muscle-marker { position: absolute; width: 10px; height: 10px; border: 2px solid rgba(255,255,255,.85); border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px rgba(200,245,106,.22); transform: translate(-50%, -50%); }
 .visual-label { position: absolute; right: 6px; bottom: 6px; padding: 3px 6px; border-radius: 999px; color: white; background: rgba(16,20,16,.78); font-size: .5rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; backdrop-filter: blur(4px); }
 .expand-visual-hint { position: absolute; top: 6px; right: 6px; display: grid; width: 24px; height: 24px; place-items: center; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; color: white; background: rgba(16,20,16,.76); font-size: .7rem; font-weight: 800; line-height: 1; backdrop-filter: blur(4px); }
+.is-animated-guide { animation: exercise-motion-guide 3.2s linear infinite; }
+@keyframes exercise-motion-guide {
+  0%, 49.99%, 100% { background-position: 0% 50%; }
+  50%, 99.99% { background-position: 100% 50%; }
+}
 .prescription { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 11px; }
 .prescription div { padding: 8px; border-radius: 10px; background: var(--soft); }
 .prescription span, .tempo-row span { display: block; margin-bottom: 2px; color: var(--muted); font-size: .56rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -266,5 +271,5 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }

@@ -16,11 +16,11 @@ const ASSETS = {
   barbellBack: "./assets/equipment-barbell-back-v1.png",
   lateralMachine: "./assets/equipment-machine-lateral-raise-v1.png",
   rearDeltMachine: "./assets/equipment-machine-reverse-pec-deck-v1.png",
-  facePull: "./assets/equipment-machine-face-pull-v1.png",
+  facePull: "./assets/equipment-machine-face-pull-guide-v2.png",
   backExtensionMachine: "./assets/equipment-machine-back-extension-v1.png",
 };
 
-const visual = (src, columns, rows, index, fit = "crop") => ({ src, columns, rows, index, fit });
+const visual = (src, columns, rows, index, fit = "crop", extras = {}) => ({ src, columns, rows, index, fit, ...extras });
 const exercise = (name, equipment, focus, cue, image) => ({ name, equipment, focus, cue, image });
 
 const muscleGroups = [
@@ -39,7 +39,7 @@ const muscleGroups = [
       exercise("Seated shoulder-press machine", "machine", "Front and side delts", "Keep the back supported and avoid forcing lockout.", visual(ASSETS.machineShoulders,2,4,0)),
       exercise("Lateral-raise machine", "machine", "Side delts", "Lead with the padded elbows and stop near shoulder height.", visual(ASSETS.lateralMachine,1,1,0)),
       exercise("Reverse pec-deck rear-delt fly", "machine", "Rear delts · upper back", "Face the pad and open the arms without shrugging.", visual(ASSETS.rearDeltMachine,1,1,0)),
-      exercise("Rope cable face pull", "cable", "Rear delts · external rotators", "Separate the rope ends beside the temples with high elbows.", visual(ASSETS.facePull,1,1,0)),
+      exercise("Rope cable face pull", "cable", "Rear delts · external rotators", "Separate the rope ends beside the temples with high elbows.", visual(ASSETS.facePull,2,1,0,"cover",{ animated: true, displayAspect: "4 / 5" })),
     ],
   },
   {
@@ -171,11 +171,20 @@ function applyVisual(node, image) {
   const horizontal = image.columns === 1 ? 0 : (column / (image.columns - 1)) * 100;
   const vertical = image.rows === 1 ? 0 : (row / (image.rows - 1)) * 100;
   node.style.backgroundImage = `url("${image.src}")`;
-  node.style.backgroundSize = image.fit === "contain" ? "contain" : `${image.columns * 100}% ${image.rows * 100}%`;
-  node.style.backgroundPosition = image.fit === "contain" ? "center" : `${horizontal}% ${vertical}%`;
+  node.style.backgroundSize = image.fit === "contain" ? "contain" : image.fit === "cover" ? `${image.columns * 100}% auto` : `${image.columns * 100}% ${image.rows * 100}%`;
+  node.style.backgroundPosition = image.fit === "contain" ? "center" : `${horizontal}% ${image.fit === "cover" ? 50 : vertical}%`;
   node.dataset.imageSrc = image.src;
   node.dataset.columns = String(image.columns);
   node.dataset.rows = String(image.rows);
+  if (image.displayAspect) node.dataset.displayAspect = image.displayAspect;
+  if (image.animated) {
+    node.dataset.animated = "true";
+    node.classList.add("is-animated-guide");
+  }
+  if (image.displayAspect) {
+    node.style.aspectRatio = image.displayAspect;
+    return;
+  }
   const source = new Image(); source.addEventListener("load", () => {
     const cellAspect = (source.naturalWidth / image.columns) / (source.naturalHeight / image.rows);
     if (Number.isFinite(cellAspect) && cellAspect > 0) node.style.aspectRatio = String(cellAspect);
@@ -223,7 +232,9 @@ function openVisual(image) {
   elements.dialogTitle.textContent = image.dataset.exerciseName; elements.dialogEquipment.textContent = `${image.dataset.equipment} reference`;
   elements.expanded.setAttribute("aria-label", `${image.dataset.exerciseName} expanded reference`);
   elements.expanded.style.backgroundImage = image.style.backgroundImage; elements.expanded.style.backgroundSize = image.style.backgroundSize;
-  elements.expanded.style.backgroundPosition = image.style.backgroundPosition; elements.expanded.style.aspectRatio = "3 / 2";
+  elements.expanded.style.backgroundPosition = image.style.backgroundPosition; elements.expanded.style.aspectRatio = image.dataset.displayAspect || "3 / 2";
+  elements.expanded.classList.toggle("is-animated-guide", image.dataset.animated === "true");
+  if (image.dataset.displayAspect) { elements.dialog.showModal(); return; }
   const source = new Image(); source.addEventListener("load", () => {
     if (elements.expanded.style.backgroundImage !== image.style.backgroundImage) return;
     const cellAspect = (source.naturalWidth / Number(image.dataset.columns)) / (source.naturalHeight / Number(image.dataset.rows));
@@ -243,5 +254,5 @@ elements.grid.addEventListener("keydown", (event) => {
 elements.closeDialog.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=15"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=16"));
 renderExercises();

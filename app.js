@@ -17,7 +17,7 @@ const exerciseAtlases = {
     "machine-back-extension": { src: "./assets/equipment-machine-back-extension-v1.png", columns: 1, rows: 1, fit: "contain" },
     "machine-lateral-raise": { src: "./assets/equipment-machine-lateral-raise-v1.png", columns: 1, rows: 1, layout: "wide" },
     "machine-rear-delt-fly": { src: "./assets/equipment-machine-reverse-pec-deck-v1.png", columns: 1, rows: 1, layout: "wide" },
-    "machine-face-pull": { src: "./assets/equipment-machine-face-pull-v1.png", columns: 1, rows: 1, layout: "wide" },
+    "machine-face-pull": { src: "./assets/equipment-machine-face-pull-guide-v2.png", columns: 2, rows: 1, fit: "cover", animated: true, displayAspect: "4 / 5" },
     "shoulders-core": { src: "./assets/equipment-machine-shoulders-core-v1.png", rows: 4, layout: "wide" },
     "arms-chest-accessory": { src: "./assets/equipment-machine-arms-chest-v1.png", rows: 3, layout: "wide" },
   },
@@ -790,13 +790,18 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
     const horizontalPosition = columns === 1 ? 0 : (column / (columns - 1)) * 100;
     const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
     visual.style.backgroundImage = `url("${atlas.src}")`;
-    visual.style.backgroundSize = atlas.fit === "contain" ? "contain" : `${columns * 100}% ${atlas.rows * 100}%`;
-    visual.style.backgroundPosition = atlas.fit === "contain" ? "center" : `${horizontalPosition}% ${verticalPosition}%`;
+    visual.style.backgroundSize = atlas.fit === "contain" ? "contain" : atlas.fit === "cover" ? `${columns * 100}% auto` : `${columns * 100}% ${atlas.rows * 100}%`;
+    visual.style.backgroundPosition = atlas.fit === "contain" ? "center" : `${horizontalPosition}% ${atlas.fit === "cover" ? 50 : verticalPosition}%`;
     visual.dataset.atlasSrc = atlas.src;
     visual.dataset.atlasColumns = String(columns);
     visual.dataset.atlasRows = String(atlas.rows);
+    if (atlas.displayAspect) visual.dataset.displayAspect = atlas.displayAspect;
+    if (atlas.animated) {
+      visual.dataset.animated = "true";
+      visual.classList.add("is-animated-guide");
+    }
   }
-  if (className === "movement-visual") visual.append(makeElement("span", "visual-label", "Movement"));
+  if (className === "movement-visual" || atlas?.animated) visual.append(makeElement("span", "visual-label", atlas?.animated ? "Motion guide" : "Movement"));
   const expandHint = makeElement("span", "expand-visual-hint", "↗");
   expandHint.setAttribute("aria-hidden", "true");
   visual.append(expandHint);
@@ -804,7 +809,8 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
 }
 
 function fitVisualToAtlas(visual) {
-  visual.style.aspectRatio = "3 / 2";
+  visual.style.aspectRatio = visual.dataset.displayAspect || "3 / 2";
+  if (visual.dataset.displayAspect) return;
   const atlasSrc = visual.dataset.atlasSrc;
   if (!atlasSrc) return;
   const image = new Image();
@@ -829,6 +835,8 @@ function openVisualDialog(visual) {
   elements.expandedVisual.dataset.atlasSrc = visual.dataset.atlasSrc || "";
   elements.expandedVisual.dataset.atlasColumns = visual.dataset.atlasColumns || "2";
   elements.expandedVisual.dataset.atlasRows = visual.dataset.atlasRows || "1";
+  elements.expandedVisual.dataset.displayAspect = visual.dataset.displayAspect || "";
+  elements.expandedVisual.classList.toggle("is-animated-guide", visual.dataset.animated === "true");
   fitVisualToAtlas(elements.expandedVisual);
   elements.visualDialog.showModal();
 }
@@ -1157,5 +1165,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=15"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=16"));
 renderAll();

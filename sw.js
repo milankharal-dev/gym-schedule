@@ -1,8 +1,8 @@
-const CACHE_NAME = "training-week-v15";
+const CACHE_NAME = "training-week-v16";
 const APP_ASSETS = [
-  "./", "./index.html", "./styles.css?v=15", "./app.js?v=15",
-  "./library.html", "./library.css?v=2", "./library.js?v=3",
-  "./manifest.webmanifest", "./icon.svg", "./assets/muscle-anatomy.png",
+  "./", "./index.html", "./styles.css?v=16", "./app.js?v=16",
+  "./library.html", "./library.css?v=3", "./library.js?v=4",
+  "./manifest.webmanifest", "./icon.svg", "./assets/muscle-anatomy.png", "./assets/equipment-machine-face-pull-guide-v2.png",
 ];
 
 self.addEventListener("install", (event) => {
