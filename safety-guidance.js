@@ -115,7 +115,8 @@
   ];
 
   const highRisk = /barbell (back squat|front squat|romanian deadlift|reverse lunge|good morning)|good morning|standing barbell overhead press|incline barbell (bench )?press|flat barbell bench press|decline barbell bench press|close.?grip barbell bench press|weighted dips|barbell rollout/;
-  const moderateRisk = /squat|lunge|step.?up|leg press|romanian deadlift|back extension|hyperextension|hip thrust|incline.*press|flat.*press|seated dumbbell press|bench press|chest.?press|dips?|shoulder press|overhead press|pull.?up|row|pulldown|pullover|upright row|leg raise|knee raise|russian twist|rotation|rollout|carry|standing barbell calf raise/;
+  const stableLowRisk = /seated chest press machine|incline chest press machine|pec deck|preacher curl machine|triceps extension machine|lateral raise machine|reverse pec deck|ab crunch machine|hip adductor machine|leg curl machine/;
+  const moderateRisk = /squat|lunge|step.?up|leg press|romanian deadlift|back extension|hyperextension|hip thrust|incline.*press|flat.*press|seated dumbbell press|bench press|chest.?press|dips?|shoulder press|overhead press|pull.?up|row|pulldown|pullover|upright row|fly|leg raise|knee raise|russian twist|rotation|rollout|carry|standing barbell calf raise/;
 
   function normalize(value) {
     return String(value || "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -124,6 +125,7 @@
   function getRisk(name) {
     const normalized = normalize(name);
     if (highRisk.test(normalized)) return "high";
+    if (stableLowRisk.test(normalized)) return "low";
     if (moderateRisk.test(normalized)) return "moderate";
     return "low";
   }
@@ -142,7 +144,7 @@
   global.exerciseSafety = {
     get,
     riskLabels: { low: "Low", moderate: "Moderate", high: "High" },
-    ratingNote: "Relative technical and loading demand at typical gym use—not a prediction of your personal injury risk.",
+    ratingNote: "Relative technical, loading and stability demand at typical gym use—not a prediction of your personal injury risk. A supported machine is usually rated below the equivalent free-path movement, while load, range, setup and fatigue still matter.",
     urgentNote: "Emergency signs: deformity, numbness/tingling, a cold or discolored limb, inability to use or bear weight, or back pain with new groin numbness, bladder/bowel changes, or weakness in both legs.",
   };
 }(globalThis));

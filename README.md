@@ -4,7 +4,7 @@ A dependency-free, mobile-first personal gym schedule plus a separate exercise-r
 
 Motion-reference pairs are adapted from the public-domain [Free Exercise DB](https://github.com/yuhonas/free-exercise-db). See `assets/motion/NOTICE.md` for details. The custom Face Pull guide remains a locally generated app asset.
 
-Safety copy is general education, not diagnosis or individualized medical advice. Its conservative first-response and escalation language follows public guidance from the [NHS on sprains and strains](https://www.nhs.uk/conditions/sprains-and-strains/), [NHS on urgent back-pain warning signs](https://www.nhs.uk/conditions/back-pain/) and [ACSM on resistance training and injury prevention](https://www.acsm.org/docs/default-source/files-for-resource-library/smb-resistance-training-and-injury-prevention.pdf).
+Safety copy is general education, not diagnosis or individualized medical advice. Ratings compare technical, loading and stability demands, so a supported machine will usually rate below the equivalent free-path cable, dumbbell or barbell movement. The conservative first-response and escalation language follows public guidance from the [NHS on sprains and strains](https://www.nhs.uk/conditions/sprains-and-strains/), [NHS on urgent back-pain warning signs](https://www.nhs.uk/conditions/back-pain/) and [ACSM on resistance training and injury prevention](https://www.acsm.org/docs/default-source/files-for-resource-library/smb-resistance-training-and-injury-prevention.pdf).
 
 ## Run locally
 
