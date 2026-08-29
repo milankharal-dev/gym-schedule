@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=18" />
+    <link rel="stylesheet" href="./styles.css?v=19" />
   </head>
   <body>
     <div class="app-shell">
@@ -107,6 +107,7 @@
               <div><p class="eyebrow">Main session</p><h2 id="exerciseHeading">Exercises</h2></div>
             </div>
             <p class="tempo-key"><strong>Tempo:</strong> lowering · pause · lifting · pause</p>
+            <p class="safety-scale-note"><strong>Injury risk:</strong> Relative technical and loading demand—not a prediction of your personal risk. Tap each safety guide for details.</p>
             <div class="exercise-list" id="exerciseList"></div>
           </section>
 
@@ -136,7 +137,9 @@
             <p><strong>Equipment mode:</strong> Use the Training equipment selector below the days. The workout, movement image and alternatives update together immediately.</p>
             <p><strong>Alternatives:</strong> Use each listed option as a replacement, not an extra exercise. Adding every similar variation creates duplicate volume without adding a new movement pattern.</p>
             <p><strong>Growth and definition:</strong> Progressive training and adequate protein build or retain muscle. How visibly “toned” it looks also depends on body-fat level; no single exercise can spot-reduce fat.</p>
-            <p><strong>Safety:</strong> Stop for sharp or increasing pain, dizziness, chest discomfort, or feeling unwell. Ask a qualified professional when unsure.</p>
+            <p><strong>Risk tags:</strong> Low, Moderate and High compare stability, technical demand and typical loading. They do not predict your personal injury risk; health history, load, fatigue, setup and technique all matter.</p>
+            <p><strong>If pain starts:</strong> Stop the set and do not test sharp or increasing pain with more weight. Follow the exercise’s injury guide and ask a qualified clinician when symptoms are severe, worsening or not improving.</p>
+            <p><strong>Emergency signs:</strong> Get urgent help for deformity, numbness or tingling, a cold/discolored limb, inability to use or bear weight, or back pain with new groin numbness, bladder/bowel changes, or weakness in both legs.</p>
           </div>
         </details>
       </main>
@@ -207,6 +210,18 @@
           </div>
           <div class="train-tempo"><span>Tempo</span><strong id="trainTempo">Controlled</strong></div>
 
+          <details class="train-safety-guide">
+            <summary>
+              <span>Injury safety</span>
+              <span class="risk-badge" id="trainRiskBadge">Moderate risk</span>
+            </summary>
+            <div class="safety-guide-body">
+              <p><strong>Avoid injury</strong><span id="trainSafetyPrevent"></span></p>
+              <p><strong>Common problem</strong><span id="trainSafetyCommon"></span></p>
+              <p><strong>If it happens</strong><span id="trainSafetyAction"></span></p>
+            </div>
+          </details>
+
           <div class="train-actions">
             <div class="train-navigation">
               <button class="train-previous" id="trainPreviousButton" type="button">← Previous</button>
@@ -239,7 +254,8 @@
       <p class="visual-dialog-note">Use this as a movement reference. Follow the written tempo and use a comfortable, controlled range.</p>
     </dialog>
 
-    <script src="./motion-guides.js?v=1" defer></script>
-    <script src="./app.js?v=18" defer></script>
+    <script src="./safety-guidance.js?v=1" defer></script>
+    <script src="./motion-guides.js?v=2" defer></script>
+    <script src="./app.js?v=19" defer></script>
   </body>
 </html>

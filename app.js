@@ -683,6 +683,8 @@ const elements = {
   trainExerciseView: $("#trainExerciseView"), trainVisualHost: $("#trainVisualHost"), trainEquipment: $("#trainEquipment"),
   trainExerciseName: $("#trainExerciseName"), trainTarget: $("#trainTarget"), trainSets: $("#trainSets"),
   trainReps: $("#trainReps"), trainRest: $("#trainRest"), trainTempo: $("#trainTempo"),
+  trainRiskBadge: $("#trainRiskBadge"), trainSafetyPrevent: $("#trainSafetyPrevent"),
+  trainSafetyCommon: $("#trainSafetyCommon"), trainSafetyAction: $("#trainSafetyAction"),
   trainOptionField: $("#trainOptionField"), trainExerciseOption: $("#trainExerciseOption"),
   trainPreviousButton: $("#trainPreviousButton"), trainReviewLast: $("#trainReviewLast"),
   trainDoneButton: $("#trainDoneButton"), trainCompleteState: $("#trainCompleteState"),
@@ -746,6 +748,24 @@ function saveState() {
 }
 function makeElement(tag, className, text) {
   const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node;
+}
+function getExerciseSafety(exerciseName) {
+  return globalThis.exerciseSafety.get(exerciseName);
+}
+function createRiskBadge(safety) {
+  return makeElement("span", `risk-badge risk-${safety.risk}`, `${globalThis.exerciseSafety.riskLabels[safety.risk]} risk`);
+}
+function createSafetyGuide(exerciseName) {
+  const safety = getExerciseSafety(exerciseName);
+  const details = makeElement("details", "exercise-safety-guide");
+  const summary = makeElement("summary");
+  summary.append(makeElement("span", "safety-shield", "＋"), makeElement("span", "", "Avoid injury & what to do"), makeElement("span", "safety-chevron", "⌄"));
+  const body = makeElement("div", "safety-guide-body");
+  [["Avoid injury", safety.prevent], ["Common problem", safety.common], ["If it happens", safety.action]].forEach(([label, text]) => {
+    const row = makeElement("p"); row.append(makeElement("strong", "", label), makeElement("span", "", text)); body.append(row);
+  });
+  details.append(summary, body);
+  return details;
 }
 
 function renderHeader() {
@@ -894,6 +914,7 @@ function getAlternativeChoices(exercise) {
 }
 function createExerciseCard(workout, exercise, index) {
   const key = completionKey(workout, exercise); const complete = Boolean(weekCompletion()[key]);
+  const safety = getExerciseSafety(exercise.name);
   const card = makeElement("article", `exercise-card${index === 0 ? " is-primary" : ""}${complete ? " is-complete" : ""}`);
   const top = makeElement("div", "exercise-top"); const toggle = makeElement("label", "completion-toggle");
   const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = complete; checkbox.dataset.completionKey = key;
@@ -901,6 +922,7 @@ function createExerciseCard(workout, exercise, index) {
   const copy = makeElement("div", "exercise-copy");
   if (index === 0) copy.append(makeElement("span", "exercise-role", exercise.primaryLabel || "Primary compound"));
   copy.append(makeElement("span", "exercise-tool", equipmentProfiles[state.equipmentProfile].label));
+  copy.append(createRiskBadge(safety));
   copy.append(makeElement("h3", "exercise-name", exercise.name));
   const target = makeElement("p", "target-copy"); const strong = makeElement("strong", "", exercise.target || "Target");
   target.append(strong, document.createTextNode(exercise.secondary ? ` · ${exercise.secondary}` : "")); copy.append(target);
@@ -912,7 +934,7 @@ function createExerciseCard(workout, exercise, index) {
     const item = makeElement("div"); item.append(makeElement("span", "", label), makeElement("strong", "", value || "—")); prescription.append(item);
   });
   const tempo = makeElement("div", "tempo-row"); tempo.append(makeElement("span", "", "Tempo"), makeElement("strong", "", exercise.tempo || "Controlled"));
-  card.append(top, referenceVisuals, prescription, tempo);
+  card.append(top, referenceVisuals, prescription, tempo, createSafetyGuide(exercise.name));
   const guidance = exerciseAlternatives[exercise.id];
   const alternatives = getAlternativeChoices(exercise);
   if (alternatives.length) {
@@ -928,7 +950,8 @@ function createExerciseCard(workout, exercise, index) {
       const item = makeElement("li", "alternative-option");
       const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId, profileLabel: alternative.label };
       const visual = createMovementVisual(workout, altExercise, alternative.visualIndex ?? exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
-      const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name));
+      const altSafety = getExerciseSafety(alternative.name);
+      const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name), createRiskBadge(altSafety), createSafetyGuide(alternative.name));
       item.append(visual, text); list.append(item);
     });
     const recommendation = makeElement("p", "coach-note");
@@ -1032,6 +1055,12 @@ function renderTrainMode() {
   elements.trainReps.textContent = exercise.reps || "—";
   elements.trainRest.textContent = exercise.rest || "—";
   elements.trainTempo.textContent = exercise.tempo || "Controlled";
+  const safety = getExerciseSafety(focusedExercise.name);
+  elements.trainRiskBadge.className = `risk-badge risk-${safety.risk}`;
+  elements.trainRiskBadge.textContent = `${globalThis.exerciseSafety.riskLabels[safety.risk]} risk`;
+  elements.trainSafetyPrevent.textContent = safety.prevent;
+  elements.trainSafetyCommon.textContent = safety.common;
+  elements.trainSafetyAction.textContent = safety.action;
   const remainingAfterThis = trainWorkout.exercises.filter((item, index) => (
     index !== trainExerciseIndex && !completion[completionKey(trainWorkout, item)]
   )).length;
@@ -1205,5 +1234,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=18"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=19"));
 renderAll();

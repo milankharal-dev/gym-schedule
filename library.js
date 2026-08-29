@@ -21,6 +21,7 @@ const ASSETS = {
 };
 
 const visual = (src, columns, rows, index, fit = "crop", extras = {}) => ({ src, columns, rows, index, fit, ...extras });
+const motionVisual = (datasetId) => visual(`./assets/motion/${datasetId}/0.jpg`, 1, 1, 0, "contain");
 const exercise = (name, equipment, focus, cue, image) => ({ name, equipment, focus, cue, image });
 
 const muscleGroups = [
@@ -152,6 +153,67 @@ const muscleGroups = [
   },
 ];
 
+const atlasAdditions = {
+  chest: [
+    exercise("Incline chest-press machine", "machine", "Upper chest · triceps", "Set the seat so the handles begin near the upper chest.", motionVisual("Leverage_Incline_Chest_Press")),
+    exercise("Flat dumbbell chest fly", "dumbbell", "Chest in a lengthened position", "Use a soft elbow bend and stop at a comfortable shoulder depth.", motionVisual("Dumbbell_Flyes")),
+  ],
+  shoulders: [
+    exercise("Seated dumbbell shoulder press", "dumbbell", "Front and side delts", "Keep the ribs stacked and press with wrists over elbows.", motionVisual("Dumbbell_Shoulder_Press")),
+    exercise("Cable lateral raise", "cable", "Side delts · constant tension", "Lead with the elbow and stop near shoulder height.", motionVisual("Cable_Seated_Lateral_Raise")),
+  ],
+  biceps: [
+    exercise("Alternating dumbbell curl", "dumbbell", "Both biceps heads", "Keep the shoulder quiet and finish each side without swinging.", motionVisual("Dumbbell_Alternate_Bicep_Curl")),
+    exercise("Bayesian cable curl", "cable", "Biceps long head", "Stand just ahead of the cable and keep the upper arm behind the torso.", motionVisual("Standing_Biceps_Cable_Curl")),
+  ],
+  triceps: [
+    exercise("Seated triceps-extension machine", "machine", "Triceps isolation", "Align the elbow with the machine pivot and control the return.", motionVisual("Machine_Triceps_Extension")),
+    exercise("Dumbbell triceps kickback", "dumbbell", "Triceps · lockout control", "Keep the upper arm still and use a light load you can fully control.", motionVisual("Tricep_Dumbbell_Kickback")),
+  ],
+  lats: [
+    exercise("Straight-arm cable pulldown", "cable", "Lats · shoulder extension", "Keep a soft elbow and drive the upper arms toward the hips.", motionVisual("Straight-Arm_Pulldown")),
+    exercise("Barbell pullover", "barbell", "Lats · teres major", "Use a light load and keep the rib cage controlled as the bar travels overhead.", motionVisual("Bent-Arm_Barbell_Pullover")),
+  ],
+  "upper-back": [
+    exercise("Bench-supported one-arm dumbbell row", "dumbbell", "Lats · rhomboids", "Keep the torso supported and pull the elbow toward the hip.", motionVisual("One-Arm_Dumbbell_Row")),
+    exercise("Seated row machine", "machine", "Mid back · lats", "Stay tall and finish by moving the shoulder blade without leaning back.", motionVisual("Leverage_Iso_Row")),
+  ],
+  "lower-back": [
+    exercise("Dumbbell Romanian deadlift", "dumbbell", "Spinal erectors · hamstrings", "Keep the dumbbells close and stop before the lower back rounds.", motionVisual("Stiff-Legged_Dumbbell_Deadlift")),
+    exercise("Barbell Romanian deadlift", "barbell", "Spinal erectors · posterior chain", "Brace first, push the hips back and keep the bar close to the legs.", motionVisual("Romanian_Deadlift")),
+  ],
+  traps: [
+    exercise("Wide-grip barbell upright row", "barbell", "Upper traps · side delts", "Use a comfortable grip and stop before the shoulders pinch.", motionVisual("Upright_Barbell_Row")),
+    exercise("One-arm dumbbell suitcase carry", "dumbbell", "Upper traps · grip · core", "Walk tall without leaning toward or away from the weight.", motionVisual("Farmers_Walk")),
+  ],
+  core: [
+    exercise("Front plank", "bodyweight", "Deep core · anti-extension", "Squeeze the glutes, keep ribs down and continue breathing.", motionVisual("Plank")),
+    exercise("Pallof press", "cable", "Obliques · anti-rotation", "Keep hips and ribs square while the hands move away from the chest.", motionVisual("Pallof_Press")),
+  ],
+  glutes: [
+    exercise("Dumbbell hip thrust", "dumbbell", "Glute max", "Keep the load centered, ribs down and pause without overextending.", motionVisual("Barbell_Hip_Thrust")),
+    exercise("Bulgarian split squat", "dumbbell", "Glutes · quads", "Use a stable stance and descend only as far as the front foot stays planted.", motionVisual("Dumbbell_Rear_Lunge")),
+  ],
+  quads: [
+    exercise("Bulgarian split squat", "dumbbell", "Quads · glutes", "Keep the front knee tracking over the toes and use support if balance limits you.", motionVisual("Dumbbell_Rear_Lunge")),
+    exercise("Single-leg press", "machine", "Quads · unilateral control", "Keep the pelvis level and use a depth you can control.", motionVisual("Leg_Press")),
+  ],
+  hamstrings: [
+    exercise("Seated leg-curl machine", "machine", "Hamstrings in a lengthened position", "Align the knee with the pivot and control the return.", motionVisual("Lying_Leg_Curls")),
+    exercise("Dumbbell Romanian deadlift", "dumbbell", "Hamstrings · glutes", "Push the hips back and stop before the spine or shoulders round.", motionVisual("Stiff-Legged_Dumbbell_Deadlift")),
+  ],
+  adductors: [
+    exercise("Cable standing hip adduction", "cable", "Inner thigh · hip control", "Hold a stable support and move the working leg slowly across the body.", motionVisual("Thigh_Adductor")),
+    exercise("Wide-stance goblet squat", "dumbbell", "Adductors · quads · glutes", "Use a stance that lets the knees track comfortably with the toes.", motionVisual("Goblet_Squat")),
+  ],
+  calves: [
+    exercise("Seated calf raise", "machine", "Soleus", "Keep the balls of the feet secure and pause through a full controlled range.", motionVisual("Standing_Calf_Raises")),
+    exercise("Leg-press calf raise", "machine", "Gastrocnemius · soleus", "Keep the knees softly extended and move only through the ankle.", motionVisual("Standing_Calf_Raises")),
+  ],
+};
+
+muscleGroups.forEach((group) => group.exercises.push(...(atlasAdditions[group.id] || [])));
+
 const equipmentLabels = { machine: "Machine", cable: "Cable", dumbbell: "Dumbbell", barbell: "Barbell", bodyweight: "Bodyweight" };
 function motionGuidesEnabled() {
   try {
@@ -170,6 +232,27 @@ const elements = {
 };
 
 let selectedMuscleId = "chest";
+
+function getExerciseSafety(exerciseName) { return globalThis.exerciseSafety.get(exerciseName); }
+function createRiskBadge(safety) {
+  const badge = document.createElement("span"); badge.className = `risk-badge risk-${safety.risk}`;
+  badge.textContent = `${globalThis.exerciseSafety.riskLabels[safety.risk]} risk`; return badge;
+}
+function createSafetyGuide(exerciseName) {
+  const safety = getExerciseSafety(exerciseName);
+  const details = document.createElement("details"); details.className = "exercise-safety-guide";
+  const summary = document.createElement("summary");
+  const icon = document.createElement("span"); icon.className = "safety-shield"; icon.textContent = "+";
+  const label = document.createElement("span"); label.textContent = "Injury guide";
+  const chevron = document.createElement("span"); chevron.className = "safety-chevron"; chevron.textContent = "⌄";
+  summary.append(icon, label, chevron);
+  const body = document.createElement("div"); body.className = "safety-guide-body";
+  [["Avoid injury", safety.prevent], ["Common problem", safety.common], ["If it happens", safety.action]].forEach(([heading, text]) => {
+    const row = document.createElement("p"); const strong = document.createElement("strong"); strong.textContent = heading;
+    const copy = document.createElement("span"); copy.textContent = text; row.append(strong, copy); body.append(row);
+  });
+  details.append(summary, body); return details;
+}
 
 function appendMotionGuide(node, guide) {
   if (!guide) return;
@@ -216,10 +299,11 @@ function createExerciseCard(item) {
   if (showMotionGuides && !item.image.animated) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
   const copy = document.createElement("div"); copy.className = "library-exercise-copy";
   const pill = document.createElement("span"); pill.className = "equipment-pill"; pill.textContent = equipmentLabels[item.equipment];
+  const safety = getExerciseSafety(item.name);
   const title = document.createElement("h3"); title.textContent = item.name;
   const focus = document.createElement("p"); focus.className = "exercise-focus"; focus.textContent = item.focus;
   const cue = document.createElement("p"); cue.className = "exercise-cue"; cue.textContent = item.cue;
-  copy.append(pill, title, focus, cue); card.append(image, copy); return card;
+  copy.append(pill, createRiskBadge(safety), title, focus, cue, createSafetyGuide(item.name)); card.append(image, copy); return card;
 }
 
 function renderMarkers(group) {
@@ -239,7 +323,7 @@ function renderExercises() {
   const group = muscleGroups.find((item) => item.id === selectedMuscleId) || muscleGroups[0];
   const query = elements.search.value.trim().toLowerCase(); const equipment = elements.equipment.value;
   const matches = group.exercises.filter((item) => (equipment === "all" || item.equipment === equipment)
-    && (!query || `${item.name} ${item.focus} ${item.equipment}`.toLowerCase().includes(query)));
+    && (!query || `${item.name} ${item.focus} ${item.equipment} ${getExerciseSafety(item.name).risk}`.toLowerCase().includes(query)));
   elements.title.textContent = group.label; elements.description.textContent = group.description;
   elements.count.textContent = `${matches.length} exercise${matches.length === 1 ? "" : "s"}`;
   elements.grid.replaceChildren(...matches.map(createExerciseCard)); elements.empty.hidden = matches.length > 0;
@@ -277,5 +361,5 @@ elements.grid.addEventListener("keydown", (event) => {
 elements.closeDialog.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=18"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=19"));
 renderExercises();

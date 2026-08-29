@@ -22,11 +22,12 @@
     [/bulgarian.*split|dumbbell.*reverse lunge/, "Dumbbell_Rear_Lunge"],
     [/barbell.*reverse lunge/, "Barbell_Lunge"],
     [/dumbbell.*step.?up/, "Dumbbell_Step_Ups"],
+    [/leg.?press.*calf raise/, "Standing_Calf_Raises"],
     [/single.?leg press|leg press/, "Leg_Press"],
     [/dumbbell.*romanian|dumbbell.*back extension/, "Stiff-Legged_Dumbbell_Deadlift"],
     [/romanian deadlift|smith.*romanian/, "Romanian_Deadlift"],
     [/barbell good morning/, "Good_Morning"],
-    [/lying.*leg curl|seated or lying.*leg curl/, "Lying_Leg_Curls"],
+    [/lying.*leg curl|seated.*leg curl/, "Lying_Leg_Curls"],
     [/hip thrust/, "Barbell_Hip_Thrust"],
     [/hip.?adductor/, "Thigh_Adductor"],
     [/back.?extension|hyperextension/, "Hyperextensions_Back_Extensions"],
@@ -52,7 +53,7 @@
     [/weighted pull.?up|pull.?up.*lat pulldown/, "Weighted_Pull_Ups"],
     [/^pull up$/, "Weighted_Pull_Ups"],
     [/plate.?loaded.*lat.?pulldown|lat pulldown/, "Wide-Grip_Lat_Pulldown"],
-    [/straight.?arm pulldown/, "Straight-Arm_Pulldown"],
+    [/straight.?arm.*pulldown/, "Straight-Arm_Pulldown"],
     [/barbell pullover/, "Bent-Arm_Barbell_Pullover"],
     [/dumbbell pullover|dead.?bug pullover/, "Bent-Arm_Dumbbell_Pullover"],
     [/pullover machine/, "Straight-Arm_Pulldown"],
@@ -96,6 +97,7 @@
     [/skull crusher/, "EZ-Bar_Skullcrusher"],
     [/dumbbell triceps kickback/, "Tricep_Dumbbell_Kickback"],
     [/pushdown/, "Triceps_Pushdown_-_Rope_Attachment"],
+    [/hip adduction/, "Thigh_Adductor"],
   ];
 
   function normalize(value) {

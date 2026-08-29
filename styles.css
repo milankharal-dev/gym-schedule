@@ -119,6 +119,7 @@ main { padding: 30px 0 52px; }
 .content-title { display: flex; align-items: center; margin-bottom: 5px; }
 .content-title .eyebrow { margin-bottom: 1px; }
 .tempo-key { margin: 0 0 14px 47px; color: var(--muted); font-size: .66rem; }
+.safety-scale-note { margin: -6px 0 14px 47px; padding: 8px 10px; border-left: 3px solid #d6a742; color: #74613a; background: #fff8e9; font-size: .61rem; line-height: 1.45; }
 .exercise-list { display: grid; gap: 11px; }
 .exercise-card { position: relative; padding: 15px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); transition: opacity .15s ease, transform .15s ease; overflow: hidden; }
 .exercise-card.is-primary { border-color: #bddc7c; box-shadow: inset 3px 0 0 var(--accent-dark); }
@@ -131,6 +132,10 @@ main { padding: 30px 0 52px; }
 .exercise-card.is-complete .completion-toggle::after { content: "✓"; font-weight: 800; }
 .exercise-role { display: inline-block; margin-bottom: 4px; padding: 3px 6px; border-radius: 999px; color: #334315; background: var(--accent); font-size: .5rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
 .exercise-tool { display: inline-block; margin: 0 0 4px 5px; padding: 3px 6px; border-radius: 999px; color: #5d665d; background: #edf0e9; font-size: .5rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.risk-badge { display: inline-flex; align-items: center; margin: 0 0 4px 5px; padding: 3px 7px; border: 1px solid transparent; border-radius: 999px; font-size: .49rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.risk-low { border-color: #b9ddc2; color: #25613a; background: #e9f7ed; }
+.risk-moderate { border-color: #ead09a; color: #77541a; background: #fff5dd; }
+.risk-high { border-color: #e5aaa4; color: #8c3027; background: #fce9e7; }
 .exercise-name { margin: 2px 0 5px; font-size: .96rem; letter-spacing: -.02em; line-height: 1.25; }
 .target-copy { margin: 0; color: var(--muted); font-size: .66rem; line-height: 1.4; }
 .target-copy strong { color: #50622c; }
@@ -163,6 +168,15 @@ main { padding: 30px 0 52px; }
 .tempo-row { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; padding: 9px 10px; border: 1px solid #e1e5d8; border-radius: 10px; background: #f8faF4; }
 .tempo-row span { display: inline; margin: 0; }
 .tempo-row strong { font-family: "Manrope", sans-serif; font-size: .77rem; letter-spacing: .05em; }
+.exercise-safety-guide { margin-top: 8px; border: 1px solid #eadbbd; border-radius: 11px; background: #fffbf2; overflow: hidden; }
+.exercise-safety-guide summary { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; gap: 7px; align-items: center; min-height: 39px; padding: 8px 10px; color: #654e20; cursor: pointer; font-size: .65rem; font-weight: 900; list-style: none; }
+.exercise-safety-guide summary::-webkit-details-marker { display: none; }
+.safety-shield { display: grid; width: 21px; height: 21px; place-items: center; border-radius: 7px; color: #77541a; background: #f5dfad; font-size: .75rem; }
+.safety-chevron { color: #947b4a; transition: transform .18s ease; }
+.exercise-safety-guide[open] .safety-chevron, .train-safety-guide[open] .safety-chevron { transform: rotate(180deg); }
+.safety-guide-body { display: grid; gap: 8px; padding: 10px; border-top: 1px solid #efe1c5; }
+.safety-guide-body p { display: grid; gap: 2px; margin: 0; color: #615b50; font-size: .62rem; line-height: 1.45; }
+.safety-guide-body strong { color: #604819; font-size: .52rem; letter-spacing: .07em; text-transform: uppercase; }
 .alternatives-button { display: grid; grid-template-columns: auto auto 1fr; gap: 7px; align-items: center; width: 100%; margin-top: 8px; padding: 9px 10px; border: 1px solid #d8e1c6; border-radius: 10px; color: #425823; background: #f4f7ed; cursor: pointer; text-align: left; font-size: .66rem; font-weight: 800; }
 .machine-first { padding: 3px 6px; border-radius: 999px; color: #53682e; background: #e5efce; font-size: .5rem; letter-spacing: .06em; text-transform: uppercase; }
 .alternatives-chevron { justify-self: end; color: var(--muted); transition: transform .18s ease; }
@@ -174,8 +188,9 @@ main { padding: 30px 0 52px; }
 .alternative-option { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 9px; align-items: center; min-height: 52px; padding: 5px; border: 1px solid #e1e6d8; border-radius: 9px; background: white; }
 .alternative-visual { position: relative; width: 72px; height: 46px; border-radius: 7px; background-color: #eeece5; background-repeat: no-repeat; cursor: zoom-in; overflow: hidden; }
 .alternative-visual .expand-visual-hint { top: 4px; right: 4px; width: 19px; height: 19px; font-size: .56rem; }
-.alternative-option strong { display: block; color: var(--ink); font-family: "Manrope", sans-serif; font-size: .68rem; line-height: 1.25; }
+.alternative-option > div > strong { display: block; color: var(--ink); font-family: "Manrope", sans-serif; font-size: .68rem; line-height: 1.25; }
 .alternative-profile { display: block; margin-bottom: 2px; color: #61733d; font-size: .5rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.alternative-option .risk-badge { margin: 4px 0 0; }
 .coach-note { margin: 10px 0 0; padding-top: 9px; border-top: 1px solid #e4e8db; }
 .coach-note strong { display: block; margin-bottom: 2px; color: #425823; font-size: .55rem; letter-spacing: .08em; text-transform: uppercase; }
 
@@ -246,6 +261,13 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-tempo { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; }
 .train-tempo span { margin: 0; }
 .train-tempo strong { font-size: .8rem; text-align: right; }
+.train-safety-guide { margin-top: 9px; border: 1px solid rgba(234,208,154,.28); border-radius: 14px; background: rgba(255,245,221,.06); overflow: hidden; }
+.train-safety-guide summary { display: flex; gap: 9px; align-items: center; justify-content: space-between; min-height: 45px; padding: 10px 12px; color: #f4e5c4; cursor: pointer; font-size: .66rem; font-weight: 900; letter-spacing: .04em; list-style: none; text-transform: uppercase; }
+.train-safety-guide summary::-webkit-details-marker { display: none; }
+.train-safety-guide .risk-badge { margin: 0; }
+.train-safety-guide .safety-guide-body { border-top-color: rgba(234,208,154,.18); background: rgba(0,0,0,.12); }
+.train-safety-guide .safety-guide-body p { color: #bec4bc; }
+.train-safety-guide .safety-guide-body strong { color: #f0d598; }
 .train-actions { display: grid; gap: 9px; margin-top: auto; padding-top: 24px; }
 .train-navigation { display: grid; grid-template-columns: minmax(102px, .42fr) minmax(0, 1fr); gap: 8px; }
 .train-done, .train-exit, .train-previous { width: 100%; min-height: 52px; border-radius: 15px; cursor: pointer; font: 800 .78rem "DM Sans", sans-serif; }
