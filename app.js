@@ -664,6 +664,8 @@ let trainWakeLock = null;
 let trainTouchStart = null;
 let suppressTrainVisualClick = false;
 let workoutVisualObserver = null;
+let trainTouchLocked = false;
+let trainUnlockTimer = null;
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
@@ -682,6 +684,7 @@ const elements = {
   expandedVisual: $("#expandedVisual"), visualDialogTitle: $("#visualDialogTitle"), visualDialogProfile: $("#visualDialogProfile"),
   closeVisualDialog: $("#closeVisualDialog"),
   trainDialog: $("#trainDialog"), exitTrainMode: $("#exitTrainMode"), trainExitButton: $("#trainExitButton"),
+  lockTrainControls: $("#lockTrainControls"), trainTouchLock: $("#trainTouchLock"), unlockTrainControls: $("#unlockTrainControls"),
   trainShell: $("#trainShell"),
   trainDayLabel: $("#trainDayLabel"), trainProgressText: $("#trainProgressText"), trainProgressBar: $("#trainProgressBar"),
   trainWakeStatus: $("#trainWakeStatus"),
@@ -804,6 +807,15 @@ function getMotionGuide(exerciseName) {
   if (!state.showMotionGuides) return null;
   return globalThis.motionGuideCatalog?.resolve(exerciseName) || null;
 }
+function appendStillReference(node) {
+  const still = makeElement("span", "visual-still-layer");
+  still.setAttribute("aria-hidden", "true");
+  still.style.backgroundImage = node.style.backgroundImage;
+  still.style.backgroundSize = node.style.backgroundSize;
+  still.style.backgroundPosition = node.style.backgroundPosition;
+  node.prepend(still);
+  node.classList.add("has-comparison-guide");
+}
 function appendMotionGuide(node, guide) {
   if (!guide) return;
   node.classList.add("has-motion-guide");
@@ -817,6 +829,23 @@ function appendMotionGuide(node, guide) {
   finish.style.backgroundImage = `url("${guide.finish}")`;
   layer.append(start, finish);
   node.prepend(layer);
+  appendStillReference(node);
+}
+function appendAnimatedMotionGuide(node, atlas) {
+  if (!atlas) return;
+  node.classList.add("has-motion-guide", "is-animated-guide");
+  node.dataset.animated = "true";
+  node.dataset.motionAtlasSrc = atlas.src;
+  node.dataset.motionAtlasColumns = String(atlas.columns || 2);
+  const layer = makeElement("span", "motion-guide-layer");
+  layer.setAttribute("aria-hidden", "true");
+  const frame = makeElement("span", "motion-guide-frame motion-guide-atlas");
+  frame.style.backgroundImage = `url("${atlas.src}")`;
+  frame.style.backgroundSize = atlas.fit === "contain" ? "contain" : `${(atlas.columns || 2) * 100}% auto`;
+  frame.style.backgroundPosition = "0% 50%";
+  layer.append(frame);
+  node.prepend(layer);
+  appendStillReference(node);
 }
 
 function hydrateMovementVisual(visual) {
@@ -847,9 +876,10 @@ function observeMovementVisual(visual, eager = false) {
 
 function createMovementVisual(workout, exercise, index, profileId = exercise.visualProfile, className = "movement-visual") {
   const configuredAtlas = exerciseAtlases[profileId]?.[exercise.visualWorkoutId || workout.workoutId];
-  const atlas = state.showMotionGuides && /face pull/i.test(exercise.name)
+  const atlas = configuredAtlas;
+  const animatedGuideAtlas = state.showMotionGuides && /face pull/i.test(exercise.name)
     ? exerciseAtlases.machine["machine-face-pull"]
-    : configuredAtlas;
+    : state.showMotionGuides && atlas?.animated ? atlas : null;
   const visual = makeElement("div", className);
   visual.setAttribute("role", "button");
   visual.setAttribute("tabindex", "0");
@@ -858,8 +888,9 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
   visual.dataset.profileLabel = exercise.profileLabel || equipmentProfiles[exercise.profileId]?.label || equipmentProfiles[profileId]?.label || "Exercise";
   if (className === "movement-visual" && atlas?.rows === 4) visual.classList.add("is-landscape");
   if (className === "movement-visual" && atlas?.layout === "wide") visual.classList.add("is-wide");
-  const guide = atlas?.animated ? null : getMotionGuide(exercise.name);
-  const hasMotion = Boolean(atlas?.animated && state.showMotionGuides) || Boolean(guide);
+  const guide = animatedGuideAtlas ? null : getMotionGuide(exercise.name);
+  const hasMotion = Boolean(animatedGuideAtlas) || Boolean(guide);
+  if (hasMotion) visual.classList.add("will-have-comparison");
   visual._hydrateMedia = () => {
     if (atlas) {
       const columns = atlas.columns || 2;
@@ -875,14 +906,11 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
       visual.dataset.atlasColumns = String(columns);
       visual.dataset.atlasRows = String(atlas.rows);
       if (atlas.displayAspect) visual.dataset.displayAspect = atlas.displayAspect;
-      if (atlas.animated && state.showMotionGuides) {
-        visual.dataset.animated = "true";
-        visual.classList.add("is-animated-guide");
-      }
     }
-    appendMotionGuide(visual, guide);
+    if (animatedGuideAtlas) appendAnimatedMotionGuide(visual, animatedGuideAtlas);
+    else appendMotionGuide(visual, guide);
   };
-  if (className === "movement-visual" || hasMotion) visual.append(makeElement("span", "visual-label", hasMotion ? "Motion guide" : "Movement"));
+  if (className === "movement-visual" || hasMotion) visual.append(makeElement("span", "visual-label", hasMotion ? "Still + motion" : "Movement"));
   const expandHint = makeElement("span", "expand-visual-hint", "↗");
   expandHint.setAttribute("aria-hidden", "true");
   visual.append(expandHint);
@@ -919,12 +947,19 @@ function openVisualDialog(visual) {
   elements.expandedVisual.dataset.atlasColumns = visual.dataset.atlasColumns || "2";
   elements.expandedVisual.dataset.atlasRows = visual.dataset.atlasRows || "1";
   elements.expandedVisual.dataset.displayAspect = visual.dataset.displayAspect || "";
-  elements.expandedVisual.classList.toggle("is-animated-guide", visual.dataset.animated === "true");
-  elements.expandedVisual.querySelector(".motion-guide-layer")?.remove();
-  elements.expandedVisual.classList.remove("has-motion-guide");
+  elements.expandedVisual.querySelectorAll(".motion-guide-layer, .visual-still-layer").forEach((layer) => layer.remove());
+  elements.expandedVisual.classList.remove("has-motion-guide", "has-comparison-guide", "is-animated-guide");
   delete elements.expandedVisual.dataset.motionStart;
   delete elements.expandedVisual.dataset.motionFinish;
-  if (visual.dataset.motionStart && visual.dataset.motionFinish) {
+  delete elements.expandedVisual.dataset.animated;
+  delete elements.expandedVisual.dataset.motionAtlasSrc;
+  delete elements.expandedVisual.dataset.motionAtlasColumns;
+  if (visual.dataset.animated === "true" && visual.dataset.motionAtlasSrc) {
+    appendAnimatedMotionGuide(elements.expandedVisual, {
+      src: visual.dataset.motionAtlasSrc,
+      columns: Number(visual.dataset.motionAtlasColumns) || 2,
+    });
+  } else if (visual.dataset.motionStart && visual.dataset.motionFinish) {
     appendMotionGuide(elements.expandedVisual, { start: visual.dataset.motionStart, finish: visual.dataset.motionFinish });
   }
   fitVisualToAtlas(elements.expandedVisual);
@@ -987,6 +1022,7 @@ function createExerciseCard(workout, exercise, index) {
         const item = makeElement("li", "alternative-option");
         const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId, profileLabel: alternative.label };
         const visual = createMovementVisual(workout, altExercise, alternative.visualIndex ?? exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
+        if (visual.classList.contains("will-have-comparison")) item.classList.add("has-comparison-visual");
         const altSafety = getExerciseSafety(alternative.name);
         const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name), createRiskBadge(altSafety), createSafetyGuide(alternative.name));
         item.append(visual, text); list.append(item);
@@ -1131,6 +1167,29 @@ function scrollTrainModeToTop() {
   elements.trainShell.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function cancelTrainUnlockHold() {
+  window.clearTimeout(trainUnlockTimer);
+  trainUnlockTimer = null;
+  elements.unlockTrainControls.classList.remove("is-holding");
+}
+
+function setTrainTouchLock(locked) {
+  trainTouchLocked = locked;
+  cancelTrainUnlockHold();
+  elements.trainShell.classList.toggle("is-touch-locked", locked);
+  elements.trainTouchLock.hidden = !locked;
+  elements.lockTrainControls.setAttribute("aria-pressed", String(locked));
+  if (locked) elements.unlockTrainControls.focus({ preventScroll: true });
+  else if (elements.trainDialog.open) elements.lockTrainControls.focus({ preventScroll: true });
+}
+
+function beginTrainUnlockHold() {
+  if (!trainTouchLocked || trainUnlockTimer) return;
+  elements.unlockTrainControls.classList.remove("is-holding");
+  window.requestAnimationFrame(() => elements.unlockTrainControls.classList.add("is-holding"));
+  trainUnlockTimer = window.setTimeout(() => setTrainTouchLock(false), 1200);
+}
+
 function setTrainWakeStatus(active) {
   elements.trainWakeStatus.hidden = !active;
 }
@@ -1170,6 +1229,7 @@ function openTrainMode() {
   if (!workout || workout.isRest || !workout.exercises.length) return;
   trainWorkout = workout;
   trainExerciseIndex = incompleteExerciseIndex(trainWorkout);
+  setTrainTouchLock(false);
   renderTrainMode();
   lockTrainModeScroll();
   elements.trainDialog.showModal();
@@ -1177,6 +1237,7 @@ function openTrainMode() {
 }
 
 function closeTrainMode() {
+  setTrainTouchLock(false);
   releaseTrainWakeLock();
   if (elements.trainDialog.open) elements.trainDialog.close();
   unlockTrainModeScroll();
@@ -1208,7 +1269,7 @@ function completeCurrentTrainExercise() {
 }
 
 function handleTrainSwipe(horizontalDistance, verticalDistance) {
-  if (!trainWorkout || trainExerciseIndex >= trainWorkout.exercises.length) return false;
+  if (trainTouchLocked || !trainWorkout || trainExerciseIndex >= trainWorkout.exercises.length) return false;
   const horizontal = Math.abs(horizontalDistance);
   if (horizontal < 72 || horizontal < Math.abs(verticalDistance) * 1.35) return false;
   if (horizontalDistance > 0 && trainExerciseIndex === 0) return false;
@@ -1269,6 +1330,21 @@ elements.exerciseList.addEventListener("keydown", (event) => {
   event.preventDefault(); openVisualDialog(visual);
 });
 elements.startTrainMode.addEventListener("click", openTrainMode);
+elements.lockTrainControls.addEventListener("click", () => setTrainTouchLock(true));
+elements.unlockTrainControls.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  elements.unlockTrainControls.setPointerCapture?.(event.pointerId);
+  beginTrainUnlockHold();
+});
+["pointerup", "pointercancel", "lostpointercapture"].forEach((eventName) => {
+  elements.unlockTrainControls.addEventListener(eventName, cancelTrainUnlockHold);
+});
+elements.unlockTrainControls.addEventListener("keydown", (event) => {
+  if ((event.key === " " || event.key === "Enter") && !event.repeat) { event.preventDefault(); beginTrainUnlockHold(); }
+});
+elements.unlockTrainControls.addEventListener("keyup", (event) => {
+  if (event.key === " " || event.key === "Enter") cancelTrainUnlockHold();
+});
 elements.trainDoneButton.addEventListener("click", completeCurrentTrainExercise);
 elements.trainPreviousButton.addEventListener("click", showPreviousTrainExercise);
 elements.trainReviewLast.addEventListener("click", showPreviousTrainExercise);
@@ -1308,7 +1384,8 @@ elements.trainVisualHost.addEventListener("keydown", (event) => {
   if (!visual || (event.key !== "Enter" && event.key !== " ")) return;
   event.preventDefault(); openVisualDialog(visual);
 });
-elements.trainDialog.addEventListener("close", () => { releaseTrainWakeLock(); unlockTrainModeScroll(); trainWorkout = null; });
+elements.trainDialog.addEventListener("cancel", (event) => { if (trainTouchLocked) event.preventDefault(); });
+elements.trainDialog.addEventListener("close", () => { setTrainTouchLock(false); releaseTrainWakeLock(); unlockTrainModeScroll(); trainWorkout = null; });
 elements.trainDialog.addEventListener("click", (event) => { if (event.target === elements.trainDialog) closeTrainMode(); });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && elements.trainDialog.open) requestTrainWakeLock();
@@ -1341,5 +1418,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=22"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=23"));
 renderAll();

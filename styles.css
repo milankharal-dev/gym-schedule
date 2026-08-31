@@ -99,7 +99,8 @@ main { padding: 30px 0 52px; }
 .workout-hero > p { margin-bottom: 22px; color: #b9c0b9; font-size: .85rem; }
 .workout-hero-footer { padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); color: #d9ddd7; font-size: .72rem; }
 .train-button { display: inline-flex; gap: 7px; align-items: center; padding: 10px 13px; border: 0; border-radius: 999px; color: #26330e; background: var(--accent); cursor: pointer; font: 800 .69rem "DM Sans", sans-serif; box-shadow: 0 8px 24px rgba(200,245,106,.16); }
-.train-button > span:first-child { font-size: .56rem; }
+.train-button-icon { display: grid; width: 18px; height: 18px; place-items: center; }
+.train-button-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2.2; }
 
 .info-card, .training-guide { margin: 12px 0; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); overflow: hidden; }
 .info-card summary, .training-guide summary { display: flex; align-items: center; padding: 16px; cursor: pointer; list-style: none; }
@@ -139,9 +140,10 @@ main { padding: 30px 0 52px; }
 .exercise-name { margin: 2px 0 5px; font-size: .96rem; letter-spacing: -.02em; line-height: 1.25; }
 .target-copy { margin: 0; color: var(--muted); font-size: .66rem; line-height: 1.4; }
 .target-copy strong { color: #50622c; }
-.reference-visuals { display: flex; gap: 8px; margin: 12px 0 0 44px; }
+.reference-visuals { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0 44px; }
 .movement-visual, .muscle-map { position: relative; height: 112px; border-radius: 13px; overflow: hidden; }
 .movement-visual { flex: 0 0 112px; border: 1px solid #d9ddd3; background-color: #eeece5; background-repeat: no-repeat; cursor: zoom-in; }
+.movement-visual.will-have-comparison { flex-basis: 232px; }
 .is-visual-pending { background-image: linear-gradient(110deg, #e5e8df 24%, #f5f6f2 42%, #e5e8df 62%); background-size: 220% 100%; animation: visual-placeholder 1.35s ease-in-out infinite; }
 @keyframes visual-placeholder { to { background-position-x: -220%; } }
 .movement-visual.is-landscape { height: 84px; }
@@ -151,14 +153,16 @@ main { padding: 30px 0 52px; }
 .muscle-marker { position: absolute; width: 10px; height: 10px; border: 2px solid rgba(255,255,255,.85); border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 5px rgba(200,245,106,.22); transform: translate(-50%, -50%); }
 .visual-label { position: absolute; z-index: 2; right: 6px; bottom: 6px; padding: 3px 6px; border-radius: 999px; color: white; background: rgba(16,20,16,.78); font-size: .5rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; backdrop-filter: blur(4px); }
 .expand-visual-hint { position: absolute; z-index: 2; top: 6px; right: 6px; display: grid; width: 24px; height: 24px; place-items: center; border: 1px solid rgba(255,255,255,.35); border-radius: 50%; color: white; background: rgba(16,20,16,.76); font-size: .7rem; font-weight: 800; line-height: 1; backdrop-filter: blur(4px); }
-.motion-guide-layer { position: absolute; z-index: 1; inset: 0; background: #202420; pointer-events: none; }
+.visual-still-layer, .motion-guide-layer { position: absolute; z-index: 1; inset: 0; background-color: #202420; background-repeat: no-repeat; pointer-events: none; }
+.has-comparison-guide .visual-still-layer { right: 50%; }
+.has-comparison-guide .motion-guide-layer { left: 50%; border-left: 2px solid rgba(255,255,255,.72); }
 .motion-guide-frame { position: absolute; inset: 0; background-position: center; background-repeat: no-repeat; background-size: contain; }
 .motion-guide-finish { opacity: 0; animation: motion-guide-frames 3.2s steps(1, end) infinite; }
 @keyframes motion-guide-frames {
   0%, 49.99%, 100% { opacity: 0; }
   50%, 99.99% { opacity: 1; }
 }
-.is-animated-guide { animation: exercise-motion-guide 3.2s linear infinite; }
+.motion-guide-atlas { animation: exercise-motion-guide 3.2s steps(1, end) infinite; }
 @keyframes exercise-motion-guide {
   0%, 49.99%, 100% { background-position: 0% 50%; }
   50%, 99.99% { background-position: 100% 50%; }
@@ -188,7 +192,9 @@ main { padding: 30px 0 52px; }
 .alternatives-intro { margin: 0 0 6px; color: #425823; font-size: .62rem; font-weight: 800; }
 .alternative-options { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .alternative-option { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 9px; align-items: center; min-height: 52px; padding: 5px; border: 1px solid #e1e6d8; border-radius: 9px; background: white; }
+.alternative-option.has-comparison-visual { grid-template-columns: 144px minmax(0, 1fr); }
 .alternative-visual { position: relative; width: 72px; height: 46px; border-radius: 7px; background-color: #eeece5; background-repeat: no-repeat; cursor: zoom-in; overflow: hidden; }
+.alternative-visual.will-have-comparison { width: 144px; height: 92px; }
 .alternative-visual .expand-visual-hint { top: 4px; right: 4px; width: 19px; height: 19px; font-size: .56rem; }
 .alternative-option > div > strong { display: block; color: var(--ink); font-family: "Manrope", sans-serif; font-size: .68rem; line-height: 1.25; }
 .alternative-profile { display: block; margin-bottom: 2px; color: #61733d; font-size: .5rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
@@ -233,7 +239,7 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-dialog { width: min(600px, 100vw); height: 100dvh; max-width: 600px; max-height: 100dvh; margin: auto; padding: 0; border: 0; color: white; background: #101410; box-shadow: 0 28px 100px rgba(3,6,4,.7); overflow: hidden; }
 .train-dialog:focus { outline: 0; }
 .train-dialog::backdrop { background: rgba(5,8,6,.82); backdrop-filter: blur(7px); }
-.train-shell { display: flex; height: 100%; padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom)); flex-direction: column; background: radial-gradient(circle at 100% 0, rgba(111,140,59,.24), transparent 34%), #101410; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #485048 #101410; scrollbar-width: thin; }
+.train-shell { position: relative; display: flex; height: 100%; padding: calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom)); flex-direction: column; background: radial-gradient(circle at 100% 0, rgba(111,140,59,.24), transparent 34%), #101410; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #485048 #101410; scrollbar-width: thin; }
 .train-shell::-webkit-scrollbar { width: 6px; }
 .train-shell::-webkit-scrollbar-track { background: #101410; }
 .train-shell::-webkit-scrollbar-thumb { border-radius: 999px; background: #485048; }
@@ -241,10 +247,13 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-header > div { min-width: 0; }
 .train-kicker { margin: 0 0 4px; color: var(--accent); font-size: .63rem; font-weight: 900; letter-spacing: .12em; line-height: 1.4; text-transform: uppercase; }
 .train-header #trainProgressText { color: #adb5ad; font-size: .72rem; }
+.train-header-actions { display: flex; gap: 8px; align-items: center; }
 .train-wake-status { display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; color: #c8f56a; font-size: .58rem; font-weight: 800; }
 .train-wake-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; box-shadow: 0 0 0 4px rgba(200,245,106,.1); }
 .train-wake-status[hidden] { display: none; }
 .train-close { display: grid; flex: 0 0 auto; width: 42px; height: 42px; padding: 0; place-items: center; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; color: white; background: rgba(255,255,255,.06); cursor: pointer; font-size: 1.35rem; }
+.train-lock { display: grid; width: 42px; height: 42px; padding: 0; place-items: center; border: 1px solid rgba(200,245,106,.24); border-radius: 50%; color: var(--accent); background: rgba(200,245,106,.08); cursor: pointer; }
+.train-lock svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .train-progress-track { height: 5px; margin: 16px 0 20px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
 .train-progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--accent); transition: width .24s ease; }
 .train-exercise-view { display: flex; flex: 1; flex-direction: column; }
@@ -285,6 +294,17 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-complete h2 { margin: 0; color: white; font-size: 2.4rem; letter-spacing: -.06em; }
 .train-complete > p:not(.train-kicker) { max-width: 330px; margin: 10px auto 28px; color: #aeb6ae; font-size: .8rem; line-height: 1.55; }
 .train-complete-actions { display: grid; gap: 9px; width: min(330px, 100%); margin: 0 auto; }
+.train-shell.is-touch-locked > :not(.train-touch-lock) { pointer-events: none; user-select: none; }
+.train-touch-lock { position: fixed; z-index: 20; inset: 0; display: grid; width: min(600px, 100vw); height: 100dvh; margin: auto; padding: calc(28px + env(safe-area-inset-top)) 28px calc(28px + env(safe-area-inset-bottom)); place-content: center; color: white; background: radial-gradient(circle at 50% 35%, rgba(111,140,59,.28), transparent 38%), #0d110d; text-align: center; touch-action: none; }
+.train-touch-lock[hidden] { display: none; }
+.train-touch-lock-icon { display: grid; width: 78px; height: 78px; margin: 0 auto 22px; place-items: center; border: 1px solid rgba(200,245,106,.28); border-radius: 25px; color: var(--accent); background: rgba(200,245,106,.08); box-shadow: 0 22px 60px rgba(0,0,0,.28); }
+.train-touch-lock-icon svg { width: 35px; height: 35px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+.train-touch-lock h2 { margin: 3px 0 10px; font-size: clamp(1.8rem, 8vw, 2.5rem); letter-spacing: -.055em; }
+.train-touch-lock > p:not(.train-kicker) { max-width: 330px; margin: 0 auto 28px; color: #aeb7ae; font-size: .78rem; line-height: 1.55; }
+.train-unlock { position: relative; width: min(330px, 100%); min-height: 58px; margin: 0 auto; border: 1px solid rgba(255,255,255,.2); border-radius: 17px; color: white; background: rgba(255,255,255,.07); cursor: pointer; font: 900 .76rem "DM Sans", sans-serif; overflow: hidden; touch-action: none; }
+.train-unlock > span:first-child { position: relative; z-index: 1; }
+.train-unlock-progress { position: absolute; inset: 0; background: rgba(200,245,106,.3); transform: scaleX(0); transform-origin: left; }
+.train-unlock.is-holding .train-unlock-progress { transform: scaleX(1); transition: transform 1.2s linear; }
 
 .visual-dialog { width: min(620px, calc(100% - 20px)); max-height: calc(100dvh - 20px); padding: 18px; border: 0; border-radius: 24px; color: white; background: #111511; box-shadow: 0 28px 90px rgba(4,7,5,.55); }
 .visual-dialog::backdrop { background: rgba(6,9,7,.82); backdrop-filter: blur(7px); }
@@ -310,6 +330,7 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
   .exercise-top { grid-template-columns: 30px minmax(0, 1fr); gap: 8px; }
   .reference-visuals { margin-left: 38px; }
   .movement-visual { flex-basis: 104px; height: 104px; }
+  .movement-visual.will-have-comparison { flex-basis: min(220px, 100%); }
   .movement-visual.is-landscape { height: 78px; }
   .movement-visual.is-wide { height: 69px; }
   .muscle-map { width: 76px; height: 104px; }

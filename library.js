@@ -264,6 +264,23 @@ function appendMotionGuide(node, guide) {
   const start = document.createElement("span"); start.className = "motion-guide-frame motion-guide-start"; start.style.backgroundImage = `url("${guide.start}")`;
   const finish = document.createElement("span"); finish.className = "motion-guide-frame motion-guide-finish"; finish.style.backgroundImage = `url("${guide.finish}")`;
   layer.append(start, finish); node.prepend(layer);
+  appendStillReference(node);
+}
+
+function appendStillReference(node) {
+  const still = document.createElement("span"); still.className = "visual-still-layer"; still.setAttribute("aria-hidden", "true");
+  still.style.backgroundImage = node.style.backgroundImage; still.style.backgroundSize = node.style.backgroundSize;
+  still.style.backgroundPosition = node.style.backgroundPosition; node.prepend(still); node.classList.add("has-comparison-guide");
+}
+
+function appendAnimatedMotionGuide(node, atlas) {
+  if (!atlas) return;
+  node.classList.add("has-motion-guide", "is-animated-guide"); node.dataset.animated = "true";
+  node.dataset.motionAtlasSrc = atlas.src; node.dataset.motionAtlasColumns = String(atlas.columns || 2);
+  const layer = document.createElement("span"); layer.className = "motion-guide-layer"; layer.setAttribute("aria-hidden", "true");
+  const frame = document.createElement("span"); frame.className = "motion-guide-frame motion-guide-atlas";
+  frame.style.backgroundImage = `url("${atlas.src}")`; frame.style.backgroundSize = atlas.fit === "contain" ? "contain" : `${(atlas.columns || 2) * 100}% auto`;
+  frame.style.backgroundPosition = "0% 50%"; layer.append(frame); node.prepend(layer); appendStillReference(node);
 }
 
 function applyVisual(node, image) {
@@ -278,10 +295,6 @@ function applyVisual(node, image) {
   node.dataset.columns = String(image.columns);
   node.dataset.rows = String(image.rows);
   if (image.displayAspect) node.dataset.displayAspect = image.displayAspect;
-  if (image.animated && showMotionGuides) {
-    node.dataset.animated = "true";
-    node.classList.add("is-animated-guide");
-  }
   if (image.displayAspect) {
     node.style.aspectRatio = image.displayAspect;
     return;
@@ -324,7 +337,8 @@ function createExerciseCard(item) {
   image.setAttribute("aria-label", `Expand visual for ${item.name}`); image.dataset.exerciseName = item.name; image.dataset.equipment = equipmentLabels[item.equipment];
   image._hydrateMedia = () => {
     applyVisual(image, item.image);
-    if (showMotionGuides && !item.image.animated) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
+    if (showMotionGuides && item.image.animated) appendAnimatedMotionGuide(image, item.image);
+    else if (showMotionGuides) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
   };
   observeLibraryVisual(image);
   const copy = document.createElement("div"); copy.className = "library-exercise-copy";
@@ -367,10 +381,13 @@ function openVisual(image) {
   elements.expanded.setAttribute("aria-label", `${image.dataset.exerciseName} expanded reference`);
   elements.expanded.style.backgroundImage = image.style.backgroundImage; elements.expanded.style.backgroundSize = image.style.backgroundSize;
   elements.expanded.style.backgroundPosition = image.style.backgroundPosition; elements.expanded.style.aspectRatio = image.dataset.displayAspect || "3 / 2";
-  elements.expanded.classList.toggle("is-animated-guide", image.dataset.animated === "true");
-  elements.expanded.querySelector(".motion-guide-layer")?.remove(); elements.expanded.classList.remove("has-motion-guide");
-  delete elements.expanded.dataset.motionStart; delete elements.expanded.dataset.motionFinish;
-  if (image.dataset.motionStart && image.dataset.motionFinish) {
+  elements.expanded.querySelectorAll(".motion-guide-layer, .visual-still-layer").forEach((layer) => layer.remove());
+  elements.expanded.classList.remove("has-motion-guide", "has-comparison-guide", "is-animated-guide");
+  delete elements.expanded.dataset.motionStart; delete elements.expanded.dataset.motionFinish; delete elements.expanded.dataset.animated;
+  delete elements.expanded.dataset.motionAtlasSrc; delete elements.expanded.dataset.motionAtlasColumns;
+  if (image.dataset.animated === "true" && image.dataset.motionAtlasSrc) {
+    appendAnimatedMotionGuide(elements.expanded, { src: image.dataset.motionAtlasSrc, columns: Number(image.dataset.motionAtlasColumns) || 2 });
+  } else if (image.dataset.motionStart && image.dataset.motionFinish) {
     appendMotionGuide(elements.expanded, { start: image.dataset.motionStart, finish: image.dataset.motionFinish });
   }
   if (image.dataset.displayAspect) { elements.dialog.showModal(); return; }
@@ -393,5 +410,5 @@ elements.grid.addEventListener("keydown", (event) => {
 elements.closeDialog.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=22"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=23"));
 renderExercises();

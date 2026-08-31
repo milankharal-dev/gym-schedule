@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=21" />
+    <link rel="stylesheet" href="./styles.css?v=22" />
   </head>
   <body>
     <div class="app-shell">
@@ -85,7 +85,7 @@
           <div class="workout-hero-footer">
             <span id="exerciseCount"></span>
             <button class="train-button" id="startTrainMode" type="button">
-              <span aria-hidden="true">▶</span>
+              <span class="train-button-icon" aria-hidden="true"><svg viewBox="0 0 28 28"><path d="M8 11v6M20 11v6M4.5 9v10M23.5 9v10M8 14h12" /></svg></span>
               <span id="trainButtonLabel">Start workout</span>
             </button>
           </div>
@@ -187,7 +187,12 @@
             <span id="trainProgressText">Exercise 1 of 1</span>
             <span class="train-wake-status" id="trainWakeStatus" role="status" hidden>Screen stays awake</span>
           </div>
-          <button class="train-close" id="exitTrainMode" type="button" aria-label="Exit train mode">×</button>
+          <div class="train-header-actions">
+            <button class="train-lock" id="lockTrainControls" type="button" aria-label="Lock touch controls" aria-pressed="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+            </button>
+            <button class="train-close" id="exitTrainMode" type="button" aria-label="Exit train mode">×</button>
+          </div>
         </header>
 
         <div class="train-progress-track" aria-hidden="true"><span id="trainProgressBar"></span></div>
@@ -243,6 +248,19 @@
             <button class="train-done" id="trainCompleteExit" type="button">Return to schedule</button>
           </div>
         </section>
+
+        <section class="train-touch-lock" id="trainTouchLock" hidden aria-labelledby="trainTouchLockTitle">
+          <span class="train-touch-lock-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>
+          </span>
+          <p class="train-kicker">Pocket protection</p>
+          <h2 id="trainTouchLockTitle">Touch controls locked</h2>
+          <p>Your workout controls are blocked, while screen-awake mode remains active when supported. Hold below when you are ready to use the app again.</p>
+          <button class="train-unlock" id="unlockTrainControls" type="button">
+            <span>Hold to unlock</span>
+            <span class="train-unlock-progress" aria-hidden="true"></span>
+          </button>
+        </section>
       </div>
     </dialog>
 
@@ -258,6 +276,6 @@
 
     <script src="./safety-guidance.js?v=2" defer></script>
     <script src="./motion-guides.js?v=2" defer></script>
-    <script src="./app.js?v=20" defer></script>
+    <script src="./app.js?v=21" defer></script>
   </body>
 </html>
