@@ -140,7 +140,7 @@ main { padding: 30px 0 52px; }
 .exercise-name { margin: 2px 0 5px; font-size: .96rem; letter-spacing: -.02em; line-height: 1.25; }
 .target-copy { margin: 0; color: var(--muted); font-size: .66rem; line-height: 1.4; }
 .target-copy strong { color: #50622c; }
-.reference-visuals { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0 44px; }
+.reference-visuals { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; margin: 12px 0 0 44px; }
 .movement-visual, .muscle-map { position: relative; height: 112px; border-radius: 13px; overflow: hidden; }
 .movement-visual { flex: 0 0 112px; border: 1px solid #d9ddd3; background-color: #eeece5; background-repeat: no-repeat; cursor: zoom-in; }
 .movement-visual.will-have-comparison { flex-basis: 232px; }
@@ -260,6 +260,7 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-exercise-view[hidden], .train-complete[hidden] { display: none; }
 .train-visual-host { margin-bottom: 6px; touch-action: pan-y; user-select: none; }
 .train-movement-visual { position: relative; width: 100%; min-height: 215px; border: 1px solid rgba(255,255,255,.13); border-radius: 22px; background-color: #262b26; background-repeat: no-repeat; cursor: zoom-in; box-shadow: 0 20px 45px rgba(0,0,0,.25); overflow: hidden; }
+.train-movement-visual.has-comparison-guide { min-height: 0; }
 .train-swipe-hint { display: none; margin: 0 0 15px; color: #899289; font-size: .56rem; font-weight: 700; text-align: center; }
 .train-equipment { align-self: flex-start; margin-bottom: 8px; padding: 5px 8px; border-radius: 999px; color: #354219; background: var(--accent); font-size: .55rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .train-exercise-view h2 { margin: 0; color: white; font-size: clamp(1.7rem, 8vw, 2.6rem); letter-spacing: -.055em; line-height: 1.08; }
@@ -313,6 +314,7 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .visual-dialog-copy .eyebrow { color: var(--accent); }
 .visual-dialog-copy h2 { margin: 0; color: white; font-size: clamp(1.2rem, 6vw, 1.75rem); letter-spacing: -.04em; }
 .expanded-visual { position: relative; width: 100%; min-height: 190px; max-height: calc(100dvh - 190px); border: 1px solid rgba(255,255,255,.13); border-radius: 17px; background-color: #252925; background-repeat: no-repeat; box-shadow: 0 16px 40px rgba(0,0,0,.28); overflow: hidden; }
+.expanded-visual.has-comparison-guide { min-height: 0; }
 .visual-dialog-note { margin: 13px 3px 1px; color: #bbc3bb; font-size: .72rem; line-height: 1.5; }
 
 @media (min-width: 601px) {

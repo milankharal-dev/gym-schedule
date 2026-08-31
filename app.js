@@ -909,6 +909,7 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
     }
     if (animatedGuideAtlas) appendAnimatedMotionGuide(visual, animatedGuideAtlas);
     else appendMotionGuide(visual, guide);
+    fitVisualToAtlas(visual);
   };
   if (className === "movement-visual" || hasMotion) visual.append(makeElement("span", "visual-label", hasMotion ? "Still + motion" : "Movement"));
   const expandHint = makeElement("span", "expand-visual-hint", "↗");
@@ -919,17 +920,25 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
 }
 
 function fitVisualToAtlas(visual) {
-  visual.style.aspectRatio = visual.dataset.displayAspect || "3 / 2";
-  if (visual.dataset.displayAspect) return;
+  const comparisonMultiplier = visual.classList.contains("has-comparison-guide") ? 2 : 1;
+  const applyAspect = (cellAspect) => {
+    visual.style.aspectRatio = String(cellAspect * comparisonMultiplier);
+    if (comparisonMultiplier > 1) visual.style.height = "auto";
+  };
+  if (visual.dataset.displayAspect) {
+    const [width, height] = visual.dataset.displayAspect.split("/").map(Number);
+    applyAspect(width > 0 && height > 0 ? width / height : 3 / 2);
+    return;
+  }
   const atlasSrc = visual.dataset.atlasSrc;
-  if (!atlasSrc) return;
+  if (!atlasSrc) { applyAspect(3 / 2); return; }
   const image = new Image();
   image.addEventListener("load", () => {
     if (visual.dataset.atlasSrc !== atlasSrc) return;
     const columns = Number(visual.dataset.atlasColumns) || 2;
     const rows = Number(visual.dataset.atlasRows) || 1;
     const cellAspect = (image.naturalWidth / columns) / (image.naturalHeight / rows);
-    if (Number.isFinite(cellAspect) && cellAspect > 0) visual.style.aspectRatio = String(cellAspect);
+    if (Number.isFinite(cellAspect) && cellAspect > 0) applyAspect(cellAspect);
   }, { once: true });
   image.src = atlasSrc;
 }
@@ -1418,5 +1427,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=23"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=24"));
 renderAll();

@@ -295,13 +295,19 @@ function applyVisual(node, image) {
   node.dataset.columns = String(image.columns);
   node.dataset.rows = String(image.rows);
   if (image.displayAspect) node.dataset.displayAspect = image.displayAspect;
+}
+
+function fitLibraryVisual(node, image) {
+  const comparisonMultiplier = node.classList.contains("has-comparison-guide") ? 2 : 1;
+  const applyAspect = (cellAspect) => { node.style.aspectRatio = String(cellAspect * comparisonMultiplier); };
   if (image.displayAspect) {
-    node.style.aspectRatio = image.displayAspect;
+    const [width, height] = image.displayAspect.split("/").map(Number);
+    applyAspect(width > 0 && height > 0 ? width / height : 3 / 2);
     return;
   }
   const source = new Image(); source.addEventListener("load", () => {
     const cellAspect = (source.naturalWidth / image.columns) / (source.naturalHeight / image.rows);
-    if (Number.isFinite(cellAspect) && cellAspect > 0) node.style.aspectRatio = String(cellAspect);
+    if (Number.isFinite(cellAspect) && cellAspect > 0) applyAspect(cellAspect);
   }, { once: true }); source.src = image.src;
 }
 
@@ -339,6 +345,7 @@ function createExerciseCard(item) {
     applyVisual(image, item.image);
     if (showMotionGuides && item.image.animated) appendAnimatedMotionGuide(image, item.image);
     else if (showMotionGuides) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
+    fitLibraryVisual(image, item.image);
   };
   observeLibraryVisual(image);
   const copy = document.createElement("div"); copy.className = "library-exercise-copy";
@@ -380,7 +387,7 @@ function openVisual(image) {
   elements.dialogTitle.textContent = image.dataset.exerciseName; elements.dialogEquipment.textContent = `${image.dataset.equipment} reference`;
   elements.expanded.setAttribute("aria-label", `${image.dataset.exerciseName} expanded reference`);
   elements.expanded.style.backgroundImage = image.style.backgroundImage; elements.expanded.style.backgroundSize = image.style.backgroundSize;
-  elements.expanded.style.backgroundPosition = image.style.backgroundPosition; elements.expanded.style.aspectRatio = image.dataset.displayAspect || "3 / 2";
+  elements.expanded.style.backgroundPosition = image.style.backgroundPosition; elements.expanded.style.aspectRatio = image.style.aspectRatio || "3 / 2";
   elements.expanded.querySelectorAll(".motion-guide-layer, .visual-still-layer").forEach((layer) => layer.remove());
   elements.expanded.classList.remove("has-motion-guide", "has-comparison-guide", "is-animated-guide");
   delete elements.expanded.dataset.motionStart; delete elements.expanded.dataset.motionFinish; delete elements.expanded.dataset.animated;
@@ -390,12 +397,7 @@ function openVisual(image) {
   } else if (image.dataset.motionStart && image.dataset.motionFinish) {
     appendMotionGuide(elements.expanded, { start: image.dataset.motionStart, finish: image.dataset.motionFinish });
   }
-  if (image.dataset.displayAspect) { elements.dialog.showModal(); return; }
-  const source = new Image(); source.addEventListener("load", () => {
-    if (elements.expanded.style.backgroundImage !== image.style.backgroundImage) return;
-    const cellAspect = (source.naturalWidth / Number(image.dataset.columns)) / (source.naturalHeight / Number(image.dataset.rows));
-    if (Number.isFinite(cellAspect) && cellAspect > 0) elements.expanded.style.aspectRatio = String(cellAspect);
-  }, { once: true }); source.src = image.dataset.imageSrc; elements.dialog.showModal();
+  elements.dialog.showModal();
 }
 
 elements.picker.addEventListener("click", (event) => {
@@ -410,5 +412,5 @@ elements.grid.addEventListener("keydown", (event) => {
 elements.closeDialog.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=23"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=24"));
 renderExercises();
