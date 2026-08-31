@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css?v=20" />
+    <link rel="stylesheet" href="./styles.css?v=21" />
   </head>
   <body>
     <div class="app-shell">
@@ -185,6 +185,7 @@
           <div>
             <p class="train-kicker" id="trainDayLabel">Train mode</p>
             <span id="trainProgressText">Exercise 1 of 1</span>
+            <span class="train-wake-status" id="trainWakeStatus" role="status" hidden>Screen stays awake</span>
           </div>
           <button class="train-close" id="exitTrainMode" type="button" aria-label="Exit train mode">×</button>
         </header>
@@ -193,6 +194,7 @@
 
         <section class="train-exercise-view" id="trainExerciseView">
           <div class="train-visual-host" id="trainVisualHost"></div>
+          <p class="train-swipe-hint" id="trainSwipeHint" aria-hidden="true">Swipe left for done &amp; next · right for previous</p>
           <span class="train-equipment" id="trainEquipment"></span>
           <h2 id="trainExerciseName">Exercise</h2>
           <p class="train-target" id="trainTarget"></p>
@@ -256,6 +258,6 @@
 
     <script src="./safety-guidance.js?v=2" defer></script>
     <script src="./motion-guides.js?v=2" defer></script>
-    <script src="./app.js?v=19" defer></script>
+    <script src="./app.js?v=20" defer></script>
   </body>
 </html>

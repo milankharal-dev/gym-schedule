@@ -65,6 +65,8 @@ main { padding: 22px 0 52px; }
 .library-grid { display: grid; gap: 10px; }
 .library-exercise-card { border: 1px solid var(--line); border-radius: 17px; background: var(--panel-soft); overflow: hidden; }
 .library-exercise-visual { position: relative; width: 100%; min-height: 170px; aspect-ratio: 3 / 2; border: 0; background-color: #242938; background-repeat: no-repeat; cursor: zoom-in; overflow: hidden; }
+.library-exercise-visual.is-visual-pending { background-image: linear-gradient(110deg, #202535 24%, #303749 42%, #202535 62%); background-size: 220% 100%; animation: library-visual-placeholder 1.35s ease-in-out infinite; }
+@keyframes library-visual-placeholder { to { background-position-x: -220%; } }
 .library-exercise-visual::after { position: absolute; z-index: 2; top: 8px; right: 8px; display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid rgba(255,255,255,.28); border-radius: 50%; color: white; background: rgba(3,6,11,.72); content: "↗"; font-size: .72rem; font-weight: 900; }
 .library-exercise-visual.is-animated-guide::before, .library-exercise-visual.has-motion-guide::before { position: absolute; z-index: 2; right: 8px; bottom: 8px; padding: 4px 7px; border-radius: 999px; color: white; background: rgba(3,6,11,.75); content: "Motion guide"; font-size: .49rem; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
 .motion-guide-layer { position: absolute; z-index: 1; inset: 0; background: #202638; pointer-events: none; }

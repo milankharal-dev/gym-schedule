@@ -660,6 +660,10 @@ let trainWorkout = null;
 let trainExerciseIndex = 0;
 let trainScrollPosition = 0;
 let trainScrollLocked = false;
+let trainWakeLock = null;
+let trainTouchStart = null;
+let suppressTrainVisualClick = false;
+let workoutVisualObserver = null;
 
 const $ = (selector) => document.querySelector(selector);
 const elements = {
@@ -680,6 +684,7 @@ const elements = {
   trainDialog: $("#trainDialog"), exitTrainMode: $("#exitTrainMode"), trainExitButton: $("#trainExitButton"),
   trainShell: $("#trainShell"),
   trainDayLabel: $("#trainDayLabel"), trainProgressText: $("#trainProgressText"), trainProgressBar: $("#trainProgressBar"),
+  trainWakeStatus: $("#trainWakeStatus"),
   trainExerciseView: $("#trainExerciseView"), trainVisualHost: $("#trainVisualHost"), trainEquipment: $("#trainEquipment"),
   trainExerciseName: $("#trainExerciseName"), trainTarget: $("#trainTarget"), trainSets: $("#trainSets"),
   trainReps: $("#trainReps"), trainRest: $("#trainRest"), trainTempo: $("#trainTempo"),
@@ -813,6 +818,33 @@ function appendMotionGuide(node, guide) {
   layer.append(start, finish);
   node.prepend(layer);
 }
+
+function hydrateMovementVisual(visual) {
+  if (!visual?._hydrateMedia) return;
+  const hydrate = visual._hydrateMedia;
+  visual._hydrateMedia = null;
+  hydrate();
+  visual.classList.remove("is-visual-pending");
+}
+
+function observeMovementVisual(visual, eager = false) {
+  if (eager || !("IntersectionObserver" in globalThis)) {
+    hydrateMovementVisual(visual);
+    return;
+  }
+  if (!workoutVisualObserver) {
+    workoutVisualObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        hydrateMovementVisual(entry.target);
+        workoutVisualObserver?.unobserve(entry.target);
+      });
+    }, { rootMargin: "220px 0px" });
+  }
+  visual.classList.add("is-visual-pending");
+  workoutVisualObserver.observe(visual);
+}
+
 function createMovementVisual(workout, exercise, index, profileId = exercise.visualProfile, className = "movement-visual") {
   const configuredAtlas = exerciseAtlases[profileId]?.[exercise.visualWorkoutId || workout.workoutId];
   const atlas = state.showMotionGuides && /face pull/i.test(exercise.name)
@@ -824,34 +856,37 @@ function createMovementVisual(workout, exercise, index, profileId = exercise.vis
   visual.setAttribute("aria-label", `Expand visual reference for ${exercise.name}`);
   visual.dataset.exerciseName = exercise.name;
   visual.dataset.profileLabel = exercise.profileLabel || equipmentProfiles[exercise.profileId]?.label || equipmentProfiles[profileId]?.label || "Exercise";
-  if (atlas) {
-    if (className === "movement-visual" && atlas.rows === 4) visual.classList.add("is-landscape");
-    if (className === "movement-visual" && atlas.layout === "wide") visual.classList.add("is-wide");
-    const columns = atlas.columns || 2;
-    const sourceIndex = atlas.cells?.[index] ?? index;
-    const column = sourceIndex % columns;
-    const row = Math.floor(sourceIndex / columns);
-    const horizontalPosition = columns === 1 ? 0 : (column / (columns - 1)) * 100;
-    const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
-    visual.style.backgroundImage = `url("${atlas.src}")`;
-    visual.style.backgroundSize = atlas.fit === "contain" ? "contain" : atlas.fit === "cover" ? `${columns * 100}% auto` : `${columns * 100}% ${atlas.rows * 100}%`;
-    visual.style.backgroundPosition = atlas.fit === "contain" ? "center" : `${horizontalPosition}% ${atlas.fit === "cover" ? 50 : verticalPosition}%`;
-    visual.dataset.atlasSrc = atlas.src;
-    visual.dataset.atlasColumns = String(columns);
-    visual.dataset.atlasRows = String(atlas.rows);
-    if (atlas.displayAspect) visual.dataset.displayAspect = atlas.displayAspect;
-    if (atlas.animated && state.showMotionGuides) {
-      visual.dataset.animated = "true";
-      visual.classList.add("is-animated-guide");
-    }
-  }
+  if (className === "movement-visual" && atlas?.rows === 4) visual.classList.add("is-landscape");
+  if (className === "movement-visual" && atlas?.layout === "wide") visual.classList.add("is-wide");
   const guide = atlas?.animated ? null : getMotionGuide(exercise.name);
-  appendMotionGuide(visual, guide);
-  const hasMotion = visual.classList.contains("is-animated-guide") || Boolean(guide);
+  const hasMotion = Boolean(atlas?.animated && state.showMotionGuides) || Boolean(guide);
+  visual._hydrateMedia = () => {
+    if (atlas) {
+      const columns = atlas.columns || 2;
+      const sourceIndex = atlas.cells?.[index] ?? index;
+      const column = sourceIndex % columns;
+      const row = Math.floor(sourceIndex / columns);
+      const horizontalPosition = columns === 1 ? 0 : (column / (columns - 1)) * 100;
+      const verticalPosition = atlas.rows === 1 ? 0 : (row / (atlas.rows - 1)) * 100;
+      visual.style.backgroundImage = `url("${atlas.src}")`;
+      visual.style.backgroundSize = atlas.fit === "contain" ? "contain" : atlas.fit === "cover" ? `${columns * 100}% auto` : `${columns * 100}% ${atlas.rows * 100}%`;
+      visual.style.backgroundPosition = atlas.fit === "contain" ? "center" : `${horizontalPosition}% ${atlas.fit === "cover" ? 50 : verticalPosition}%`;
+      visual.dataset.atlasSrc = atlas.src;
+      visual.dataset.atlasColumns = String(columns);
+      visual.dataset.atlasRows = String(atlas.rows);
+      if (atlas.displayAspect) visual.dataset.displayAspect = atlas.displayAspect;
+      if (atlas.animated && state.showMotionGuides) {
+        visual.dataset.animated = "true";
+        visual.classList.add("is-animated-guide");
+      }
+    }
+    appendMotionGuide(visual, guide);
+  };
   if (className === "movement-visual" || hasMotion) visual.append(makeElement("span", "visual-label", hasMotion ? "Motion guide" : "Movement"));
   const expandHint = makeElement("span", "expand-visual-hint", "↗");
   expandHint.setAttribute("aria-hidden", "true");
   visual.append(expandHint);
+  observeMovementVisual(visual, className !== "movement-visual");
   return visual;
 }
 
@@ -872,6 +907,7 @@ function fitVisualToAtlas(visual) {
 }
 
 function openVisualDialog(visual) {
+  hydrateMovementVisual(visual);
   if (!visual?.style.backgroundImage || visual.style.backgroundImage === "none") return;
   elements.visualDialogTitle.textContent = visual.dataset.exerciseName || "Exercise visual";
   elements.visualDialogProfile.textContent = `${visual.dataset.profileLabel || "Exercise"} reference`;
@@ -945,18 +981,22 @@ function createExerciseCard(workout, exercise, index) {
     button.append(makeElement("span", "", `Show ${alternatives.length} alternatives`), makeElement("span", "machine-first", "With images"), makeElement("span", "alternatives-chevron", "⌄"));
     const panel = makeElement("div", "alternatives-panel"); panel.id = controlsId; panel.hidden = true;
     panel.append(makeElement("p", "alternatives-intro", "Same training slot — choose one replacement:"));
-    const list = makeElement("ul", "alternative-options");
-    alternatives.forEach((alternative) => {
-      const item = makeElement("li", "alternative-option");
-      const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId, profileLabel: alternative.label };
-      const visual = createMovementVisual(workout, altExercise, alternative.visualIndex ?? exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
-      const altSafety = getExerciseSafety(alternative.name);
-      const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name), createRiskBadge(altSafety), createSafetyGuide(alternative.name));
-      item.append(visual, text); list.append(item);
-    });
-    const recommendation = makeElement("p", "coach-note");
-    recommendation.append(makeElement("strong", "", "Coach’s take"), document.createTextNode(guidance?.recommendation || "Use the option you can perform comfortably and progress consistently. Replace the programmed exercise rather than adding duplicate sets."));
-    panel.append(list, recommendation); card.append(button, panel);
+    panel._hydrateAlternatives = () => {
+      const list = makeElement("ul", "alternative-options");
+      alternatives.forEach((alternative) => {
+        const item = makeElement("li", "alternative-option");
+        const altExercise = { name: alternative.name, visualWorkoutId: alternative.visualWorkoutId, profileLabel: alternative.label };
+        const visual = createMovementVisual(workout, altExercise, alternative.visualIndex ?? exercise.visualIndex ?? index, alternative.visualProfile, "alternative-visual");
+        const altSafety = getExerciseSafety(alternative.name);
+        const text = makeElement("div"); text.append(makeElement("span", "alternative-profile", alternative.label), makeElement("strong", "", alternative.name), createRiskBadge(altSafety), createSafetyGuide(alternative.name));
+        item.append(visual, text); list.append(item);
+      });
+      const recommendation = makeElement("p", "coach-note");
+      recommendation.append(makeElement("strong", "", "Coach’s take"), document.createTextNode(guidance?.recommendation || "Use the option you can perform comfortably and progress consistently. Replace the programmed exercise rather than adding duplicate sets."));
+      panel.append(list, recommendation);
+      panel._hydrateAlternatives = null;
+    };
+    card.append(button, panel);
   }
   return card;
 }
@@ -1091,6 +1131,40 @@ function scrollTrainModeToTop() {
   elements.trainShell.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+function setTrainWakeStatus(active) {
+  elements.trainWakeStatus.hidden = !active;
+}
+
+async function requestTrainWakeLock() {
+  if (!("wakeLock" in navigator) || document.visibilityState !== "visible" || !elements.trainDialog.open) return;
+  if (trainWakeLock && !trainWakeLock.released) return;
+  try {
+    const sentinel = await navigator.wakeLock.request("screen");
+    if (!elements.trainDialog.open) {
+      await sentinel.release();
+      return;
+    }
+    trainWakeLock = sentinel;
+    setTrainWakeStatus(true);
+    sentinel.addEventListener("release", () => {
+      if (trainWakeLock !== sentinel) return;
+      trainWakeLock = null;
+      setTrainWakeStatus(false);
+    }, { once: true });
+  } catch {
+    trainWakeLock = null;
+    setTrainWakeStatus(false);
+  }
+}
+
+async function releaseTrainWakeLock() {
+  const sentinel = trainWakeLock;
+  trainWakeLock = null;
+  setTrainWakeStatus(false);
+  if (!sentinel || sentinel.released) return;
+  try { await sentinel.release(); } catch { /* The browser may already have released it. */ }
+}
+
 function openTrainMode() {
   const workout = getSchedule().find((day) => day.dayId === selectedDayId);
   if (!workout || workout.isRest || !workout.exercises.length) return;
@@ -1099,9 +1173,11 @@ function openTrainMode() {
   renderTrainMode();
   lockTrainModeScroll();
   elements.trainDialog.showModal();
+  requestTrainWakeLock();
 }
 
 function closeTrainMode() {
+  releaseTrainWakeLock();
   if (elements.trainDialog.open) elements.trainDialog.close();
   unlockTrainModeScroll();
   trainWorkout = null;
@@ -1131,7 +1207,19 @@ function completeCurrentTrainExercise() {
   scrollTrainModeToTop();
 }
 
+function handleTrainSwipe(horizontalDistance, verticalDistance) {
+  if (!trainWorkout || trainExerciseIndex >= trainWorkout.exercises.length) return false;
+  const horizontal = Math.abs(horizontalDistance);
+  if (horizontal < 72 || horizontal < Math.abs(verticalDistance) * 1.35) return false;
+  if (horizontalDistance > 0 && trainExerciseIndex === 0) return false;
+  if (navigator.vibrate) navigator.vibrate(18);
+  if (horizontalDistance < 0) completeCurrentTrainExercise();
+  else showPreviousTrainExercise();
+  return true;
+}
+
 function renderWorkout() {
+  workoutVisualObserver?.disconnect();
   const workout = getSchedule().find((day) => day.dayId === selectedDayId); const day = dayDefinitions.find((item) => item.id === selectedDayId);
   elements.workoutHero.hidden = workout.isRest; elements.workoutDetails.hidden = workout.isRest; elements.restState.hidden = !workout.isRest;
   if (workout.isRest) return;
@@ -1171,6 +1259,7 @@ elements.exerciseList.addEventListener("click", (event) => {
   const button = event.target.closest(".alternatives-button"); if (!button) return;
   const panel = document.getElementById(button.dataset.alternativesTarget); if (!panel) return;
   const willOpen = button.getAttribute("aria-expanded") !== "true";
+  if (willOpen) panel._hydrateAlternatives?.();
   button.setAttribute("aria-expanded", String(willOpen)); panel.hidden = !willOpen;
   button.querySelector("span:first-child").textContent = willOpen ? "Hide alternatives" : button.dataset.closedLabel;
 });
@@ -1196,16 +1285,34 @@ elements.trainExerciseOption.addEventListener("change", () => {
   button.addEventListener("click", closeTrainMode);
 });
 elements.trainVisualHost.addEventListener("click", (event) => {
+  if (suppressTrainVisualClick) return;
   const visual = event.target.closest(".train-movement-visual");
   if (visual) openVisualDialog(visual);
 });
+elements.trainVisualHost.addEventListener("touchstart", (event) => {
+  if (event.touches.length !== 1) { trainTouchStart = null; return; }
+  trainTouchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+}, { passive: true });
+elements.trainVisualHost.addEventListener("touchend", (event) => {
+  if (!trainTouchStart || !event.changedTouches.length) return;
+  const touch = event.changedTouches[0];
+  const handled = handleTrainSwipe(touch.clientX - trainTouchStart.x, touch.clientY - trainTouchStart.y);
+  trainTouchStart = null;
+  if (!handled) return;
+  suppressTrainVisualClick = true;
+  window.setTimeout(() => { suppressTrainVisualClick = false; }, 350);
+}, { passive: true });
+elements.trainVisualHost.addEventListener("touchcancel", () => { trainTouchStart = null; }, { passive: true });
 elements.trainVisualHost.addEventListener("keydown", (event) => {
   const visual = event.target.closest(".train-movement-visual");
   if (!visual || (event.key !== "Enter" && event.key !== " ")) return;
   event.preventDefault(); openVisualDialog(visual);
 });
-elements.trainDialog.addEventListener("close", () => { unlockTrainModeScroll(); trainWorkout = null; });
+elements.trainDialog.addEventListener("close", () => { releaseTrainWakeLock(); unlockTrainModeScroll(); trainWorkout = null; });
 elements.trainDialog.addEventListener("click", (event) => { if (event.target === elements.trainDialog) closeTrainMode(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && elements.trainDialog.open) requestTrainWakeLock();
+});
 elements.closeVisualDialog.addEventListener("click", () => elements.visualDialog.close());
 elements.openSettings.addEventListener("click", openSettingsDialog); elements.openScheduleSettings.addEventListener("click", openSettingsDialog);
 elements.equipmentProfile.addEventListener("change", () => {
@@ -1234,5 +1341,5 @@ elements.resetData.addEventListener("click", () => {
 });
 [elements.settingsDialog, elements.visualDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=21"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=22"));
 renderAll();

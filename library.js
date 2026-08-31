@@ -232,6 +232,7 @@ const elements = {
 };
 
 let selectedMuscleId = "chest";
+let libraryVisualObserver = null;
 
 function getExerciseSafety(exerciseName) { return globalThis.exerciseSafety.get(exerciseName); }
 function createRiskBadge(safety) {
@@ -291,12 +292,41 @@ function applyVisual(node, image) {
   }, { once: true }); source.src = image.src;
 }
 
+function hydrateLibraryVisual(image) {
+  if (!image?._hydrateMedia) return;
+  const hydrate = image._hydrateMedia;
+  image._hydrateMedia = null;
+  hydrate();
+  image.classList.remove("is-visual-pending");
+}
+
+function observeLibraryVisual(image) {
+  if (!("IntersectionObserver" in globalThis)) {
+    hydrateLibraryVisual(image);
+    return;
+  }
+  if (!libraryVisualObserver) {
+    libraryVisualObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        hydrateLibraryVisual(entry.target);
+        libraryVisualObserver?.unobserve(entry.target);
+      });
+    }, { rootMargin: "220px 0px" });
+  }
+  image.classList.add("is-visual-pending");
+  libraryVisualObserver.observe(image);
+}
+
 function createExerciseCard(item) {
   const card = document.createElement("article"); card.className = "library-exercise-card";
   const image = document.createElement("div"); image.className = "library-exercise-visual"; image.role = "button"; image.tabIndex = 0;
   image.setAttribute("aria-label", `Expand visual for ${item.name}`); image.dataset.exerciseName = item.name; image.dataset.equipment = equipmentLabels[item.equipment];
-  applyVisual(image, item.image);
-  if (showMotionGuides && !item.image.animated) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
+  image._hydrateMedia = () => {
+    applyVisual(image, item.image);
+    if (showMotionGuides && !item.image.animated) appendMotionGuide(image, globalThis.motionGuideCatalog?.resolve(item.name));
+  };
+  observeLibraryVisual(image);
   const copy = document.createElement("div"); copy.className = "library-exercise-copy";
   const pill = document.createElement("span"); pill.className = "equipment-pill"; pill.textContent = equipmentLabels[item.equipment];
   const safety = getExerciseSafety(item.name);
@@ -320,6 +350,7 @@ function renderPicker() {
 }
 
 function renderExercises() {
+  libraryVisualObserver?.disconnect();
   const group = muscleGroups.find((item) => item.id === selectedMuscleId) || muscleGroups[0];
   const query = elements.search.value.trim().toLowerCase(); const equipment = elements.equipment.value;
   const matches = group.exercises.filter((item) => (equipment === "all" || item.equipment === equipment)
@@ -331,6 +362,7 @@ function renderExercises() {
 }
 
 function openVisual(image) {
+  hydrateLibraryVisual(image);
   elements.dialogTitle.textContent = image.dataset.exerciseName; elements.dialogEquipment.textContent = `${image.dataset.equipment} reference`;
   elements.expanded.setAttribute("aria-label", `${image.dataset.exerciseName} expanded reference`);
   elements.expanded.style.backgroundImage = image.style.backgroundImage; elements.expanded.style.backgroundSize = image.style.backgroundSize;
@@ -361,5 +393,5 @@ elements.grid.addEventListener("keydown", (event) => {
 elements.closeDialog.addEventListener("click", () => elements.dialog.close());
 elements.dialog.addEventListener("click", (event) => { if (event.target === elements.dialog) elements.dialog.close(); });
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=21"));
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=22"));
 renderExercises();

@@ -142,6 +142,8 @@ main { padding: 30px 0 52px; }
 .reference-visuals { display: flex; gap: 8px; margin: 12px 0 0 44px; }
 .movement-visual, .muscle-map { position: relative; height: 112px; border-radius: 13px; overflow: hidden; }
 .movement-visual { flex: 0 0 112px; border: 1px solid #d9ddd3; background-color: #eeece5; background-repeat: no-repeat; cursor: zoom-in; }
+.is-visual-pending { background-image: linear-gradient(110deg, #e5e8df 24%, #f5f6f2 42%, #e5e8df 62%); background-size: 220% 100%; animation: visual-placeholder 1.35s ease-in-out infinite; }
+@keyframes visual-placeholder { to { background-position-x: -220%; } }
 .movement-visual.is-landscape { height: 84px; }
 .movement-visual.is-wide { height: 75px; }
 .muscle-map { width: 82px; background: #171a17; }
@@ -239,13 +241,17 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-header > div { min-width: 0; }
 .train-kicker { margin: 0 0 4px; color: var(--accent); font-size: .63rem; font-weight: 900; letter-spacing: .12em; line-height: 1.4; text-transform: uppercase; }
 .train-header #trainProgressText { color: #adb5ad; font-size: .72rem; }
+.train-wake-status { display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; color: #c8f56a; font-size: .58rem; font-weight: 800; }
+.train-wake-status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; box-shadow: 0 0 0 4px rgba(200,245,106,.1); }
+.train-wake-status[hidden] { display: none; }
 .train-close { display: grid; flex: 0 0 auto; width: 42px; height: 42px; padding: 0; place-items: center; border: 1px solid rgba(255,255,255,.15); border-radius: 50%; color: white; background: rgba(255,255,255,.06); cursor: pointer; font-size: 1.35rem; }
 .train-progress-track { height: 5px; margin: 16px 0 20px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; }
 .train-progress-track span { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--accent); transition: width .24s ease; }
 .train-exercise-view { display: flex; flex: 1; flex-direction: column; }
 .train-exercise-view[hidden], .train-complete[hidden] { display: none; }
-.train-visual-host { margin-bottom: 18px; }
+.train-visual-host { margin-bottom: 6px; touch-action: pan-y; user-select: none; }
 .train-movement-visual { position: relative; width: 100%; min-height: 215px; border: 1px solid rgba(255,255,255,.13); border-radius: 22px; background-color: #262b26; background-repeat: no-repeat; cursor: zoom-in; box-shadow: 0 20px 45px rgba(0,0,0,.25); overflow: hidden; }
+.train-swipe-hint { display: none; margin: 0 0 15px; color: #899289; font-size: .56rem; font-weight: 700; text-align: center; }
 .train-equipment { align-self: flex-start; margin-bottom: 8px; padding: 5px 8px; border-radius: 999px; color: #354219; background: var(--accent); font-size: .55rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .train-exercise-view h2 { margin: 0; color: white; font-size: clamp(1.7rem, 8vw, 2.6rem); letter-spacing: -.055em; line-height: 1.08; }
 .train-target { margin: 9px 0 18px; color: #b9c1b9; font-size: .8rem; line-height: 1.5; }
@@ -268,7 +274,7 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
 .train-safety-guide .safety-guide-body { border-top-color: rgba(234,208,154,.18); background: rgba(0,0,0,.12); }
 .train-safety-guide .safety-guide-body p { color: #bec4bc; }
 .train-safety-guide .safety-guide-body strong { color: #f0d598; }
-.train-actions { display: grid; gap: 9px; margin-top: auto; padding-top: 24px; }
+.train-actions { position: sticky; z-index: 4; bottom: calc(-18px - env(safe-area-inset-bottom)); display: grid; gap: 9px; margin: auto -18px calc(-18px - env(safe-area-inset-bottom)); padding: 28px 18px calc(18px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, #101410 24px); }
 .train-navigation { display: grid; grid-template-columns: minmax(102px, .42fr) minmax(0, 1fr); gap: 8px; }
 .train-done, .train-exit, .train-previous { width: 100%; min-height: 52px; border-radius: 15px; cursor: pointer; font: 800 .78rem "DM Sans", sans-serif; }
 .train-done { border: 1px solid var(--accent); color: #26330e; background: var(--accent); }
@@ -307,6 +313,10 @@ footer { display: flex; justify-content: space-between; padding: 20px 0 calc(24p
   .movement-visual.is-landscape { height: 78px; }
   .movement-visual.is-wide { height: 69px; }
   .muscle-map { width: 76px; height: 104px; }
+}
+
+@media (pointer: coarse) {
+  .train-swipe-hint { display: block; }
 }
 
 @media (prefers-reduced-motion: reduce) {
