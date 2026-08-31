@@ -80,7 +80,7 @@ main { padding: 30px 0 52px; }
 .equipment-switcher strong { font-family: "Manrope", sans-serif; font-size: .78rem; }
 .equipment-switcher small { color: var(--muted); font-size: .62rem; line-height: 1.35; }
 .equipment-switcher select { flex: 0 0 auto; max-width: 145px; padding: 9px 30px 9px 10px; border: 1px solid #cbd7b7; border-radius: 11px; color: var(--dark); background-color: white; font: 700 .72rem "DM Sans", sans-serif; }
-.motion-switcher { position: relative; display: flex; gap: 14px; align-items: center; justify-content: space-between; margin-top: -8px; padding: 12px 13px; border: 1px solid #dfe4d6; border-radius: 16px; background: #fafbf7; cursor: pointer; }
+.motion-switcher { position: relative; display: flex; gap: 14px; align-items: center; justify-content: space-between; margin: -8px 0 18px; padding: 12px 13px; border: 1px solid #dfe4d6; border-radius: 16px; background: #fafbf7; cursor: pointer; }
 .motion-switcher > span:first-child { display: grid; gap: 2px; min-width: 0; }
 .motion-switcher strong { font-family: "Manrope", sans-serif; font-size: .78rem; }
 .motion-switcher small { color: var(--muted); font-size: .62rem; line-height: 1.35; }
